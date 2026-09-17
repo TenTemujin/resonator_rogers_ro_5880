@@ -36,6 +36,18 @@ mas no contexto de NV isso não ficou claro. Pendência a confirmar com o
 orientador (Dr. Achiles Fontana). Nos scripts ela entra como superstrato
 paramétrico, desativável.
 
+**⚠️ Plano de terra de titânio: NÃO é material confirmado como
+disponível.** O porta-amostra de titânio usado como plano de terra em
+todos os designs (`L_gnd`/`W_gnd`, seção 3) foi copiado do **setup do
+artigo de referência** (Fig. 1a de Opaluch et al. 2021 — sample holder
+do scanner piezo confocal deles), não da lista de materiais
+confirmados acima. Não sabemos se o grupo tem acesso a titânio nessa
+forma, nem se o plano de terra real será titânio, cobre de PCB comum,
+ou outra coisa. Isso é uma suposição de projeto carregada sem
+verificação — ver pendência correspondente na lista de perguntas
+abaixo. Se o plano de terra real for diferente (material ou tamanho),
+o resultado de S11 precisa ser reconferido.
+
 ## 3. Topologia escolhida
 
 **Antena ômega de DOIS PORTOS**, recomendada pelo professor.
@@ -102,49 +114,202 @@ Arquivo principal: `omega_antenna_nv.py` (dois designs no mesmo projeto).
 Existe para **validar o modelo HFSS contra um resultado conhecido** antes de
 confiar em qualquer extrapolação.
 
-| | Artigo | Simulado |
+| | Artigo | Simulado (2026-09-17, pós-correção) |
 |---|---|---|
-| Profundidade do vale | −47 dB | **−52 dB** ✅ ordem certa |
-| Ressonâncias | 0,7 / 2,6 / 5,5 GHz | **3,8 GHz apenas** ❌ |
-| S21 | (alto, elemento em linha) | 0 a −1,1 dB ✅ coerente |
+| Profundidade do vale | −47 dB | **−54 dB** ✅ ordem certa, até mais fundo |
+| Ressonâncias | 0,7 / 2,6 / 5,5 GHz | **3,55 GHz apenas** ❌ (era 3,8 GHz antes) |
+| S21 | (alto, elemento em linha) | 0 a −1,9 dB, ~0 dB no vale ✅ coerente |
 
-**Validação parcial.** Profundidade e comportamento de dois portos batem;
-as frequências não. É dessintonia sistemática.
+**Validação parcial, aceita como suficiente por ora.** As 3 correções
+(terra 24×15 mm, diamante, malha do gap — ver histórico abaixo) rodaram
+no HFSS sem erro e moveram a ressonância na direção certa (3,8 → 3,55
+GHz), mas só 1 de 3 modos aparece. Suspeita: o `Setup1` converge a malha
+numa única frequência (2,87 GHz) e usa isso para interpolar a banda
+inteira 0,5–6 GHz — pode não resolver bem modos tão espalhados (0,7 e
+5,5 GHz) mesmo com a malha do gap ok. **Decisão (2026-09-17): não vale a
+pena perseguir isso agora** — o ponto de adaptação já é 2,87 GHz nos
+dois designs, que é exatamente onde precisamos de precisão para o
+`Omega_RO5880`. Retomar essa investigação só se o resultado do RO5880
+em 2,87 GHz parecer suspeito.
 
-**Causas prováveis, em ordem de suspeita — atacar uma por vez:**
-1. **Plano de terra.** No script está PerfE do tamanho do substrato
-   (16×11 mm). No artigo é titânio 24×15 mm, **maior** e separado.
-   → teste mais rápido: mudar `Ground` para 24×15 mm.
-2. **O diamante não está no modelo.** εr ≈ 5,7, carrega justamente a
-   abertura. O artigo mostra que importa (banda 8,2 vs 6,3 GHz conforme a
-   espessura).
-3. **Malha no gap de 7 µm.** Razão placa/gap = 2286:1. Conferir
-   convergência e refinar a operação de malha no `Conductor`.
+Histórico da correção (2026-09-17): terra 24×15 mm (porta-amostra de
+titânio do artigo, antes era PerfE do tamanho do substrato), diamante
+IIa 3×3×0,300 mm (εr=5,7) sobre o condutor, e malha local no gap via
+caixa não-modelo (`Mesh_Region_Gap`, `assign_length_mesh` com
+`maximum_length = g_w/3`) em vez de refinar a folha `Conductor`
+inteira. Essa caixa deu dois bugs reais antes de rodar limpo: (1)
+`gap_region.model = False` é o nome de propriedade ERRADO do pyaedt —
+o certo é `.is_model`; `.model` só cria um atributo Python solto e não
+muda nada no AEDT, então a caixa ficava um sólido real de vácuo
+conflitando com o `Substrate` ("Parts ... intersect"); (2) mesmo
+corrigido, a caixa cruzava parcialmente a interface Substrate/ar em z —
+teve que ficar **inteiramente contida** dentro do `Substrate` (nunca
+atravessando outro objeto) para o HFSS aceitar.
 
 ### `Omega_RO5880` — portado para os materiais disponíveis
-Parâmetros: `r_ap` = 0,300 · `r_w` = 1,151 · `g_w` = **0,150** (mínimo PCB)
-· `f_w` = 2,300 mm (≈50 Ω em RO5880/0,75 mm).
+Parâmetros iniciais (ponto de partida do artigo, não otimizados):
+`r_ap` = 0,300 · `r_w` = 1,151 · `g_w` = 0,150 · `f_w` = 2,300 mm.
+Resultado: vale de −45 dB em ~5,2 GHz — longe de 2,87 GHz, como esperado.
 
-Resultado: S11 abaixo de −15 dB em toda a banda, vale de **−33,6 dB em
-5,5 GHz**. S21 entre 0 e −0,38 dB.
+**Histórico do sweep automatizado** (`add_ro5880_sweep()` no código,
+todas as rodadas no HFSS em 2026-09-17):
 
-Interessante: 5,5 GHz **coincide com um dos modos publicados**. Mas está
-longe de 2,87 GHz (fator 1,9). Ajustes na direção certa: aumentar `r_w`
-(indutivo) e/ou reduzir `g_w` / alongar as pernas (capacitivo).
+| Rodada | Placa | `g_w` | `r_w` | Resultado |
+|---|---|---|---|---|
+| 1ª | 16×11mm | 0,10–0,40mm | 1,0–3,5mm | piso ~4,3–4,5 GHz |
+| 2ª | 16×11mm | 0,02–0,14mm (sub-PCB) | 1,0–4,0mm | ~4,2–5,2 GHz, não melhorou |
+| 3ª | 24×22mm | 0,10–0,15mm | 4,0–9,0mm | ver análise abaixo — **enganosa** |
+| 4ª | 24×22mm | 0,15mm (fixo) | 1,0–4,0mm | ver tabela abaixo — janela localizada |
+| 5ª (atual) | 24×22mm | 0,15mm (fixo) | **1,2–1,9mm**, passo 0,1 | rodando |
+
+**Lição da 3ª rodada (2026-09-17): não confiar em "vale mais fundo do
+gráfico".** Exportando o CSV completo (não só olhando o gráfico) e
+lendo o valor exato de `dB(S11)` em 2,87 GHz — que é o que importa, não
+onde quer que o vale mais profundo esteja — nenhuma das 12 combinações
+passou de −3 dB em 2,87 GHz. E o vale mais profundo de cada `r_w` pulou
+de forma **não-monotônica** entre frequências bem diferentes (`r_w=7`→
+6 GHz na borda do sweep, `r_w=8`→5,5 GHz, `r_w=9`→4,65 GHz) — exatamente
+a armadilha já registrada na seção 7 item 5: o "vale mais fundo" pula
+entre **modos diferentes**, não é a mesma ressonância continuando a
+baixar. Toda a extrapolação de tendência feita nas rodadas 1–3 baseada
+em "qual r_w deu o vale mais baixo" estava, no mínimo em parte,
+perseguindo modos diferentes a cada ponto, não uma tendência física
+real de um único modo.
+
+**Achado que sobreviveu à correção:** com `r_w=1,151mm` (padrão, sem
+variar) nesta placa 24×22mm, o vale ficou em **3,965 GHz** — mais perto
+de 2,87 GHz que qualquer coisa testada com `r_w` grande. Sugere que só
+aumentar a placa (16×11→24×22) já ajudou bastante nesse modo específico,
+e que valores grandes de `r_w` estavam pulando para outro modo, não
+continuando a baixar este. A 4ª rodada testa `r_w` numa faixa modesta
+(1,0–4,0mm, a mesma escala da 1ª rodada) na placa grande, para tentar
+seguir esse MESMO modo (3,965 GHz) continuamente até 2,87 GHz — e ao
+analisar o resultado, ler o CSV completo (`dB(S11)` exato em 2,87 GHz
+por `r_w`, mais a curva inteira para confirmar que é o mesmo modo se
+deslocando, não um salto), nunca só o gráfico.
+
+**Resultado da 4ª rodada (lido do CSV, não do gráfico):**
+
+| `r_w` | `dB(S11)` em 2,87 GHz | vale real | onde |
+|---|---|---|---|
+| 1,0mm | −16,06 dB | −46,47 dB | 3,875 GHz |
+| 1,151mm | **−16,48 dB** (melhor) | −49,44 dB | 3,965 GHz |
+| 1,5mm | −14,22 dB | −36,48 dB | 4,670 GHz (quebra a suavidade) |
+| 2,0mm | −11,50 dB | −24,43 dB | **< 0,5 GHz** (fora da banda!) |
+| 2,5–4,0mm | piora progressiva | — | < 0,5 GHz |
+
+A partir de `r_w=2mm` a ressonância real já passou para abaixo de
+0,5 GHz — confirma que `r_w` maior baixa a frequência, só que **a
+ressonância cruza exatamente 2,87 GHz entre `r_w=1,151mm` (3,965 GHz)
+e `r_w=2,0mm` (<0,5 GHz)**. Janela estreita e agora bem localizada. A
+5ª rodada varre fino dentro dela (`r_w` 1,2–1,9mm, passo 0,1mm),
+mirando o valor de `dB(S11)` exatamente em 2,87 GHz — não "onde está
+o vale", que é a lição de novo.
+
+**Resultado da 5ª rodada — a grade discreta parou de convergir.** O
+melhor ponto ficou em `r_w=1,2mm` (−17,11 dB), e dali pra frente (até
+1,9mm) o valor só **piorou** progressivamente — contradiz a expectativa
+da 4ª rodada (que apontava a ressonância baixando e cruzando 2,87GHz
+perto de `r_w=2mm`). Sinal de que há vários modos próximos nessa banda
+e uma grade 1D não vai convergir cortando o intervalo manualmente.
+
+**Mudança de estratégia: Otimização contínua, não mais grade discreta.**
+`add_ro5880_optimization()` no código cria um setup de Optimetrics >
+Optimization (Quasi-Newton) com `r_w` livre entre 1,0–2,0mm, partindo
+do melhor ponto conhecido (1,2mm), meta `dB(S11)` em 2,87GHz `<= -40`.
+`g_w` fica fixo (0,15mm) — seu efeito já foi medido como fraco.
+**Resultado (rodado de verdade neste ambiente, que tem AEDT instalado
+em `D:\Ansys HFSS`):** convergiu em `r_w=1,1mm`, `dB(S11)@2,87GHz =
+-17,93dB` — só uma leve melhora, travou num platô, ressonância real
+ainda em ~4,02GHz. Variar só `r_w` não bastou.
+
+**Otimização multivariável (`r_ap`, `r_w`, `f_w`) — sucesso.**
+`add_ro5880_optimization_multivar()` abriu `r_ap` (0,2–0,6mm) e `f_w`
+(1,5–3,5mm) como variáveis livres também, além de `r_w` (1,0–2,5mm).
+Convergiu em ~9,6 min para **`r_ap=0,345mm`, `r_w=1,077mm`,
+`f_w=1,700mm`** (g_w continua 0,150mm, seguro para PCB).
+
+**Resultado (CORRIGIDO em 2026-09-17 após revalidação — ver nota
+abaixo): `dB(S11)` entre −27,4 e −27,9 dB em TODA a faixa 2,5–3,2 GHz**
+— não é um pico estreito em 2,87GHz, é a cauda larga de uma ressonância
+mais baixa (o vale real está perto de 0,5GHz ou abaixo). Isso é
+exatamente o que o projeto pede (seção 1: banda ≥250MHz, "ressoador de
+alto Q não serve"), então a cauda larga serve melhor que um pico
+estreito serviria:
+
+| Freq | `dB(S11)` |
+|---|---|
+| 2,50 GHz | −27,57 dB |
+| 2,74 GHz (transição 0↔−1) | −27,41 dB |
+| 2,87 GHz (centro) | −27,44 dB |
+| 2,97 GHz (transição 0↔+1) | −27,51 dB |
+| 3,20 GHz | −27,89 dB |
+
+Os parâmetros `RO["r_ap"]`, `RO["r_w"]` e `RO["f_w"]` no código já
+foram atualizados para esses valores.
+
+**Nota de revalidação (2026-09-17):** a primeira leitura deste
+resultado (logo após a otimização) reportou por engano −27 a −34 dB
+(com o valor central de −30,53 dB em 2,87GHz). Ao tentar reabrir o
+projeto depois para uma segunda checagem independente, dois processos
+do AEDT ficaram travados (`ansysedtsv.exe` órfãos) e precisaram ser
+finalizados manualmente — nesse processo, a leitura passou a retornar
+consistentemente ~−27dB, e o setup `Opt_multivar_2p87GHz` desapareceu
+da árvore de Optimetrics (embora as variáveis otimizadas tenham
+sobrevivido). Um diagnóstico mostrou que a "variação nominal" exata
+(`r_ap=0,345 · r_w=1,077 · f_w=1,700`) não tinha uma solução resolvida
+própria — só variações vizinhas da trajetória do otimizador. Um solve
+forçado do zero (`revert_to_initial_mesh=True`, ignorando qualquer
+cache) nesses valores exatos confirmou **−27,4 a −27,9 dB** como o
+número real e verificado. A tabela acima já reflete isso.
+
+**Segunda correção de metodologia (2026-09-17): sweep Interpolating
+não é confiável fora da vizinhança de 2,87GHz.** O `Sweep1` usado até
+aqui é do tipo Interpolating, ajustado a partir de UM ponto de malha
+adaptada em 2,87GHz e extrapolado para toda a banda 0,5–6GHz — os
+valores nas bordas do sweep (perto de 0,5 e 6GHz, que apareceram em
+análises anteriores como "vale mais fundo fora da banda de interesse")
+podiam ser artefato de extrapolação, não física resolvida de verdade.
+Criado `add_discrete_zeeman_sweep()`: um sweep **Discreto**
+(`Sweep_Discrete_Zeeman`, 2,5–3,2GHz, passo 0,02GHz, 36 pontos) que
+resolve o sistema linear em cada frequência de fato. Rodado nos dois
+designs (bare e diamante) — os valores no centro da banda bateram com
+o solve pontual forçado dentro do ruído numérico (dois métodos
+independentes convergindo), então **os números da tabela acima e do
+`results/` estão duplamente verificados**. Ver `results/README.md`
+para a tabela final completa e o gráfico (`plot_S11_verificado.png`).
 
 ## 6. Próximos passos
 
-1. **Fechar a validação do `Omega_Ref_Glass`** (bloqueia o resto).
-   Ordem: terra 24×15 mm → incluir o diamante → refinar malha.
-2. Com o modelo validado, **varrer o `Omega_RO5880`** para 2,87 GHz.
-   Ordem de influência: `g_w` → `r_w` → `f_w`.
-   Objetivo duplo, como no artigo: minimizar S11 em 2,87 GHz **e** na faixa
-   2,77–2,97 GHz com pesos iguais, maximizando |B| ao mesmo tempo.
-3. **Avaliar o campo** (o que realmente decide): plotar H no plano da
-   abertura, confirmar predominância de Hz, medir uniformidade sobre a área
-   do diamante, comparar com 170–280 A/m @ 1 W.
+1. ~~Fechar a validação do `Omega_Ref_Glass`~~ — aceito como validação
+   parcial suficiente (ver seção 5); não bloqueia mais o resto.
+2. ~~Tunar o `Omega_RO5880` para 2,87 GHz~~ — **concluído**: `r_ap=0,345
+   · r_w=1,077 · f_w=1,700 · g_w=0,150mm`, S11 entre −27,4 e −27,9dB em
+   toda a faixa 2,5–3,2GHz (número verificado, ver nota de revalidação).
+2b. ~~Reconferir com o diamante presente~~ — **concluído** (2026-09-17).
+   Novo design `Omega_RO5880_Diamond` (mesma geometria, diamante IIa
+   3×3×0,300mm sobre a abertura), resolvido do zero (design novo, sem
+   ambiguidade de cache). **O casamento sobreviveu e até melhorou:**
+   S11 entre −31,4 e −32,4dB em toda a faixa 2,5–3,2GHz (era −27,4 a
+   −27,9dB sem o diamante). Confirma a expectativa: a cauda larga é
+   robusta ao carregamento dielétrico.
+3. **Avaliar o campo** (o que realmente decide, próximo passo real):
+   no design `Omega_RO5880_Diamond`, plotar H no plano da abertura
+   (altura do diamante), confirmar predominância de Hz, medir
+   uniformidade sobre a área do diamante, comparar com 170–280 A/m
+   @ 1 W (referência do artigo).
 4. **Alumina** por último, como superstrato, para quantificar o
-   deslocamento de f₀.
+   deslocamento de f₀. **Já implementado** no `Omega_RO5880` como bloco
+   opcional (`RO["alumina"]["enable"]`, 25×25×0,67 mm, εr=9,8) —
+   desativado por padrão até o passo 2 fechar; ligar só depois de tunar
+   o design sem carga, senão não se sabe separar o efeito da geometria
+   do efeito da alumina.
+
+**Bloqueio de execução:** este ambiente de trabalho não tem o Ansys
+Electronics Desktop / pyaedt instalados — todo o trabalho aqui é edição
+de código, sem rodar HFSS. Os itens 1–4 dependem de execução numa
+máquina com AEDT 2025 R2 Student + pyaedt 1.6.0 para gerar resultados
+reais e não apenas geometria pronta.
 
 ### Perguntas em aberto para o orientador
 - Tamanho do diamante e área que precisa de B₁ uniforme? (define `r_ap`)
@@ -152,6 +317,11 @@ longe de 2,87 GHz (fator 1,9). Ajustes na direção certa: aumentar `r_w`
 - Acesso a litografia ou só PCB? (define a viabilidade do gap)
 - Papel exato da alumina?
 - A recomendação de ômega veio deste artigo ou de outro trabalho do grupo?
+- **O plano de terra vai ser mesmo titânio, do tamanho do porta-amostra
+  do artigo (24×15mm no artigo, 32×29mm no design tunado)? Ou é cobre
+  de PCB comum, outro metal, outro tamanho?** Essa suposição nunca foi
+  confirmada — foi só copiada do setup do artigo de referência. Todo o
+  S11 reportado depende dela; se mudar, precisa reconferir.
 
 ## 7. Lições do que já deu errado
 

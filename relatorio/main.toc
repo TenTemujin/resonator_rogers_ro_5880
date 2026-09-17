@@ -1,0 +1,42 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\babel@toc {brazil}{}\relax 
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{Resumo}{1}{section*.1}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{Lista de figuras}{3}{section*.3}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{Lista de tabelas}{4}{section*.4}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {1}Introdu\c {c}\~ao}{5}{section.1}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2}Fundamenta\c {c}\~ao te\'orica, topologia e materiais}{6}{section.2}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.1}Centros NV e requisitos de excita\c {c}\~ao}{6}{subsection.2.1}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.2}Topologia \^omega de dois portos}{6}{subsection.2.2}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {2.3}Materiais e condi\c {c}\~oes de fabrica\c {c}\~ao}{7}{subsection.2.3}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3}Metodologia}{8}{section.3}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {3.1}Ambiente de simula\c {c}\~ao}{8}{subsection.3.1}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {3.2}Valida\c {c}\~ao do modelo contra a literatura}{8}{subsection.3.2}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {3.3}Estrat\'egia de ajuste: da varredura param\'etrica \`a otimiza\c {c}\~ao multivari\'avel}{9}{subsection.3.3}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {3.4}Verifica\c {c}\~ao num\'erica independente}{9}{subsection.3.4}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {4}Resultados}{10}{section.4}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {4.1}Geometria final}{10}{subsection.4.1}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {4.2}Par\^ametros S}{11}{subsection.4.2}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {4.3}Campo magn\'etico pr\'oximo}{12}{subsection.4.3}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {4.4}Discuss\~ao}{15}{subsection.4.4}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {5}Conclus\~ao e trabalhos futuros}{17}{section.5}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{Refer\^encias}{21}{section*.6}%

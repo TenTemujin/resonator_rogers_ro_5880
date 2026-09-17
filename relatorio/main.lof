@@ -1,0 +1,24 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\babel@toc {brazil}{}\relax 
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {1}{\ignorespaces Planta baixa esquem\'atica do ressoador (terra, substrato, condutor, diamante e portas), com as dimens\~oes finais.}}{11}{figure.1}%
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {2}{\ignorespaces Detalhe da abertura e da fenda capacitiva, com todas as cotas e amplia\c {c}\~ao da fenda de 0,15\,mm.}}{12}{figure.2}%
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {3}{\ignorespaces Corte lateral da pilha de materiais (terra de Ti, substrato RO5880, condutor, diamante). Escala vertical exagerada para clareza.}}{13}{figure.3}%
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {4}{\ignorespaces Vista isom\'etrica do modelo, exportada diretamente do Ansys HFSS (\texttt {export\_model\_picture}).}}{14}{figure.4}%
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {5}{\ignorespaces Vista de topo do modelo, exportada diretamente do Ansys HFSS.}}{15}{figure.5}%
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {6}{\ignorespaces Vista 3D ilustrativa completa da estrutura (reconstru\c {c}\~ao fiel a partir dos par\^ametros exatos do modelo, usada porque a vista nativa do HFSS na escala da placa inteira n\~ao resolve o detalhe da abertura).}}{16}{figure.6}%
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {7}{\ignorespaces Vista 3D ilustrativa em detalhe da abertura, do la\c {c}o e do diamante sobreposto.}}{17}{figure.7}%
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {8}{\ignorespaces $S_{11}$ verificado (varredura discreta) na banda de interesse, para as tr\^es configura\c {c}\~oes, com as transi\c {c}\~oes Zeeman marcadas.}}{18}{figure.8}%
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {9}{\ignorespaces $S_{21}$ verificado na banda de interesse -- perda de inser\c {c}\~ao muito baixa ($<0,04\,dB$), coerente com um elemento de dois portos em linha.}}{19}{figure.9}%
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {10}{\ignorespaces Efeito do carregamento diel\'etrico do diamante sobre o casamento -- deslocamento $\Delta S_{11}$ negativo (melhora) em toda a banda.}}{19}{figure.10}%
+\defcounter {refsection}{0}\relax 
+\contentsline {figure}{\numberline {11}{\ignorespaces Magnitude do campo $H$ ao longo dos dois cortes de linha, $1$~W na porta, 2,87\,GHz.}}{20}{figure.11}%

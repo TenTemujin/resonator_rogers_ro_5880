@@ -1,0 +1,213 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.1 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global}
+    \entry{opaluch2021}{article}{}
+      \name{author}{4}{}{%
+        {{hash=e6f9a9ca3da3d8c4bbcc3cdf25c8dc13}{%
+           family={Opaluch},
+           familyi={O\bibinitperiod},
+           given={Oliver\bibnamedelima Roman},
+           giveni={O\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=14969b7bff43275a2cf17782339d9055}{%
+           family={Oshnik},
+           familyi={O\bibinitperiod},
+           given={Nimba},
+           giveni={N\bibinitperiod}}}%
+        {{hash=477fc7fea14e1bd79323b6c64445bb53}{%
+           family={Nelz},
+           familyi={N\bibinitperiod},
+           given={Richard},
+           giveni={R\bibinitperiod}}}%
+        {{hash=f8f10079bca3c94479e23f1ae441d91e}{%
+           family={Neu},
+           familyi={N\bibinitperiod},
+           given={Elke},
+           giveni={E\bibinitperiod}}}%
+      }
+      \strng{namehash}{44cb6d2ff3f2b8b2f33f7effcae0ad1e}
+      \strng{fullhash}{41d017f18eacc8e13cee39d583177432}
+      \strng{bibnamehash}{44cb6d2ff3f2b8b2f33f7effcae0ad1e}
+      \strng{authorbibnamehash}{44cb6d2ff3f2b8b2f33f7effcae0ad1e}
+      \strng{authornamehash}{44cb6d2ff3f2b8b2f33f7effcae0ad1e}
+      \strng{authorfullhash}{41d017f18eacc8e13cee39d583177432}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Nanomaterials}
+      \field{number}{8}
+      \field{title}{Optimized Planar Microwave Antenna for Nitrogen Vacancy Center Based Sensing Applications}
+      \field{volume}{11}
+      \field{year}{2021}
+      \field{pages}{2108}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.3390/nano11082108
+      \endverb
+    \endentry
+    \entry{doherty2013}{article}{}
+      \name{author}{6}{}{%
+        {{hash=2805e20b921f0ac4848183e6094b23e6}{%
+           family={Doherty},
+           familyi={D\bibinitperiod},
+           given={Marcus\bibnamedelima W.},
+           giveni={M\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+        {{hash=0f8daa834c31d79bcb117f4b351dae82}{%
+           family={Manson},
+           familyi={M\bibinitperiod},
+           given={Neil\bibnamedelima B.},
+           giveni={N\bibinitperiod\bibinitdelim B\bibinitperiod}}}%
+        {{hash=0220d3604939e9c986f8eeda0ffa9a37}{%
+           family={Delaney},
+           familyi={D\bibinitperiod},
+           given={Paul},
+           giveni={P\bibinitperiod}}}%
+        {{hash=176f8a3c6b3820fedfad65dcbb8fb5c5}{%
+           family={Jelezko},
+           familyi={J\bibinitperiod},
+           given={Fedor},
+           giveni={F\bibinitperiod}}}%
+        {{hash=04cf2105319471a0387f61073f4b79d7}{%
+           family={Wrachtrup},
+           familyi={W\bibinitperiod},
+           given={Jörg},
+           giveni={J\bibinitperiod}}}%
+        {{hash=468dc323a18769fefd20099a1ddfba06}{%
+           family={Hollenberg},
+           familyi={H\bibinitperiod},
+           given={Lloyd\bibnamedelimb C.\bibnamedelimi L.},
+           giveni={L\bibinitperiod\bibinitdelim C\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+      }
+      \strng{namehash}{501d399d19963027aaf9daa6eaa69d3e}
+      \strng{fullhash}{5c4505d31d7800431d9b847d9ef6d041}
+      \strng{bibnamehash}{501d399d19963027aaf9daa6eaa69d3e}
+      \strng{authorbibnamehash}{501d399d19963027aaf9daa6eaa69d3e}
+      \strng{authornamehash}{501d399d19963027aaf9daa6eaa69d3e}
+      \strng{authorfullhash}{5c4505d31d7800431d9b847d9ef6d041}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Physics Reports}
+      \field{title}{The nitrogen-vacancy colour centre in diamond}
+      \field{volume}{528}
+      \field{year}{2013}
+      \field{pages}{1}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1016/j.physrep.2013.02.001
+      \endverb
+    \endentry
+    \entry{barry2020}{article}{}
+      \name{author}{7}{}{%
+        {{hash=ced3d5f0404413bb3d8bd218f9dbac3f}{%
+           family={Barry},
+           familyi={B\bibinitperiod},
+           given={John\bibnamedelima F.},
+           giveni={J\bibinitperiod\bibinitdelim F\bibinitperiod}}}%
+        {{hash=4ccb89c33167c116fccbbba1e808414c}{%
+           family={Schloss},
+           familyi={S\bibinitperiod},
+           given={Jennifer\bibnamedelima M.},
+           giveni={J\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=7d20f5983000a6bbd40dc1b19eed0e6a}{%
+           family={Bauch},
+           familyi={B\bibinitperiod},
+           given={Erik},
+           giveni={E\bibinitperiod}}}%
+        {{hash=c96331bf8c3a125c08982e04120ba318}{%
+           family={Turner},
+           familyi={T\bibinitperiod},
+           given={Matthew\bibnamedelima J.},
+           giveni={M\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=5afd9deae0da66b6c3e8145888f5aeed}{%
+           family={Hart},
+           familyi={H\bibinitperiod},
+           given={Connor\bibnamedelima A.},
+           giveni={C\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=e04a52c68436f8c074e4a022fa955f5b}{%
+           family={Pham},
+           familyi={P\bibinitperiod},
+           given={Linh\bibnamedelima M.},
+           giveni={L\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=a9a6b5c7e31735a67e4d649782c06518}{%
+           family={Walsworth},
+           familyi={W\bibinitperiod},
+           given={Ronald\bibnamedelima L.},
+           giveni={R\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+      }
+      \strng{namehash}{cc1c286694617ac709c6c666123b612e}
+      \strng{fullhash}{d50ca0a40d090da99c76cc38e387034e}
+      \strng{bibnamehash}{cc1c286694617ac709c6c666123b612e}
+      \strng{authorbibnamehash}{cc1c286694617ac709c6c666123b612e}
+      \strng{authornamehash}{cc1c286694617ac709c6c666123b612e}
+      \strng{authorfullhash}{d50ca0a40d090da99c76cc38e387034e}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Reviews of Modern Physics}
+      \field{title}{Sensitivity optimization for NV-diamond magnetometry}
+      \field{volume}{92}
+      \field{year}{2020}
+      \field{pages}{015004}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1103/RevModPhys.92.015004
+      \endverb
+    \endentry
+    \entry{abesasaki2018}{article}{}
+      \name{author}{2}{}{%
+        {{hash=826d96e3a6850306170e030f28647a26}{%
+           family={Abe},
+           familyi={A\bibinitperiod},
+           given={Eisuke},
+           giveni={E\bibinitperiod}}}%
+        {{hash=f005e66e75f45a85d10c1af21f308e8c}{%
+           family={Sasaki},
+           familyi={S\bibinitperiod},
+           given={Kento},
+           giveni={K\bibinitperiod}}}%
+      }
+      \strng{namehash}{19bff5f4e164db6c9a22217e12d923f6}
+      \strng{fullhash}{19bff5f4e164db6c9a22217e12d923f6}
+      \strng{bibnamehash}{19bff5f4e164db6c9a22217e12d923f6}
+      \strng{authorbibnamehash}{19bff5f4e164db6c9a22217e12d923f6}
+      \strng{authornamehash}{19bff5f4e164db6c9a22217e12d923f6}
+      \strng{authorfullhash}{19bff5f4e164db6c9a22217e12d923f6}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Journal of Applied Physics}
+      \field{title}{Tutorial: Magnetic resonance with nitrogen-vacancy centers in diamond---microwave engineering, materials science, and magnetometry}
+      \field{volume}{123}
+      \field{year}{2018}
+      \field{pages}{161101}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1063/1.5027338
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

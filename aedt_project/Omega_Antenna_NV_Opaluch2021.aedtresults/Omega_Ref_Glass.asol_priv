@@ -1,0 +1,35 @@
+$begin '$base_index$'
+  $begin 'properties'
+    all_levels=000000000000
+    time(year=000000002026, month=000000000009, day=000000000017, hour=000000000017, min=000000000029, sec=000000000003)
+    version=000000000000
+  $end 'properties'
+  $begin '$base_index$'
+    $index$(pos=000000000000, lin=000000000001, lvl=000000000000)
+  $end '$base_index$'
+$end '$base_index$'
+$begin 'SolutionBlock1'
+	ProductName=''
+	CircuitName='Omega_Ref_Glass'
+	VersionID=35
+	PostProcess=false
+	LossLess=true
+	NextUniqueID=104
+	MoveBackwards=false
+	$begin 'VariationIDs'
+		Map(V='airgap=\'26mm\' dia_h_Omega_Ref_Glass=\'0.29999999999999999mm\' dia_L_Omega_Ref_Glass=\'3mm\' dia_W_Omega_Ref_Glass=\'3mm\' f_w=\'1.851mm\' g_w=\'0.0070000000000000001mm\' h_sub=\'1mm\' L_gnd=\'24mm\' L_sub=\'16mm\' r_ap=\'0.29999999999999999mm\' r_w=\'1.151mm\' W_gnd=\'15mm\' W_sub=\'11mm\'', ID=103)
+	$end 'VariationIDs'
+	$begin 'LinkedDataList'
+	$end 'LinkedDataList'
+	MeshAssemVersionID=0
+	$begin 'NextAssemVersionID'
+		NextUniqueID=1
+		MoveBackwards=false
+	$end 'NextAssemVersionID'
+	$begin 'MI'
+	$end 'MI'
+	VersionID2=0
+$end 'SolutionBlock1'
+$begin 'BlockMapName'
+	FileHeader='SolutionBlock1'
+$end 'BlockMapName'
