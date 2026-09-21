@@ -5,6 +5,48 @@ Code) consegue retomar o projeto lendo só este arquivo.
 
 ---
 
+## 0. ⚠️ MUDANÇA DE REQUISITOS DO ORIENTADOR (2026-09-18) — LEIA PRIMEIRO
+
+Repassado por Thiago Ferreira após conversa com o Dr. Achiles Fontana em
+17–18/09/2026. **Isso invalida a topologia de dois portos (seção 3) como
+candidata final** — todo o trabalho de tuning do `Omega_RO5880` (seção 5)
+fica como histórico/referência de metodologia, não como design a fabricar.
+
+1. **O ressoador precisa ser de UM PORTO, não dois.** A ômega de Opaluch
+   et al. (2021), usada até aqui, é de dois portos por natureza da
+   topologia (linha entra, contorna a abertura, sai). Não dá para
+   simplesmente "tirar uma porta" dela sem reprojetar (ver seção 7 item 3
+   — uma tentativa anterior de ômega de um porto com perna em curto já
+   falhou, mas por causa de dimensionamento errado do gap, não por
+   impossibilidade da ideia de 1 porto em si).
+2. **Dimensões mínimas de fabricação: 0,5 mm.** As dimensões usadas até
+   aqui (`g_w = 0,150mm`, `r_ap = 0,345mm` no `Omega_RO5880`) estão
+   abaixo do que dá para fabricar — Achiles pediu explicitamente **mínimo
+   de 0,5 mm** em qualquer feição crítica (gap, largura de trilha
+   estreita). Isso é uma restrição NOVA e MAIOR que a antiga (que
+   assumia LPKF, ~100–150 µm de corrosão — ver seção 4, também
+   desatualizada agora).
+3. **Processo de fabricação mudou: não é mais LPKF.** Entendimento do
+   Thiago: o grupo vai **cortar a placa de RO5880 no tamanho certo**
+   (isso, sozinho, é o que está acontecendo "hoje" segundo a conversa) e
+   a **deposição do condutor E o plano de terra serão feitos em São
+   Carlos** — ou seja, o padrão de trilha (o desenho fino da antena) NÃO
+   é definido pelo corte de hoje, só o tamanho do substrato. Isso reduz a
+   urgência de ter a geometria final fechada hoje, mas não elimina —
+   o substrato cortado hoje precisa ser grande o suficiente para caber
+   o design final, que ainda não foi re-otimizado (ver seção 3 e 6).
+4. **Alumina: confirmar o tipo/permissividade com o Achiles.** Existem
+   vários tipos de alumina comercial com εr diferente; o valor usado
+   aqui (εr≈9,8, alumina 99,5%) é uma suposição, não confirmado.
+5. **Pendência não resolvida:** nenhuma simulação nova foi rodada ainda
+   para a topologia de um porto com mínimo de 0,5 mm — este ambiente de
+   trabalho não tem AEDT/pyaedt instalados (ver seção 6). A seção 3
+   abaixo já foi atualizada para apontar a candidata mais provável
+   (anel fendido / split-ring, já existente em código), mas os
+   parâmetros geométricos precisam ser re-otimizados antes de fabricar.
+
+---
+
 ## 1. Objetivo
 
 Projetar e simular no Ansys HFSS um ressoador planar de micro-ondas para
@@ -50,7 +92,39 @@ o resultado de S11 precisa ser reconferido.
 
 ## 3. Topologia escolhida
 
-**Antena ômega de DOIS PORTOS**, recomendada pelo professor.
+**⚠️ SUPERADO em 2026-09-18 — ver seção 0.** A antena ômega de dois
+portos abaixo foi a topologia trabalhada até 17/09, mas o Achiles pediu
+**um porto só** e feições mínimas de 0,5 mm. Ela fica documentada porque
+(a) toda a metodologia de validação/otimização/leitura de resultado
+(seção 5, 7, 8) continua válida para qualquer topologia nova, e (b) o
+histórico de erros (seção 7) é reaproveitável.
+
+**Candidata mais provável para substituir: anel fendido (split-ring
+resonator), UM PORTO**, já implementado em
+`scripts/nv_resonators_compare.py` (função `build_ring`), baseado em:
+> Sasaki et al., *Rev. Sci. Instrum.* **87**, 053904 (2016) — 2,87 GHz,
+> banda 400 MHz, uniforme no furo de 1 mm de diâmetro.
+> Misonou et al., *Rev. Sci. Instrum.* **91**, 023703 (2020),
+> arXiv:2002.02113 — Tabela I: Antena #1, f=2,790 GHz, r=0,5,
+> R+s=10,9, g=0,1 mm, em FR4 1,6 mm; modelo LC série.
+
+Circuito LC série: o laço é o indutor, a fenda radial (`g_slot`) é o
+capacitor, alimentado por UMA microfita de 50 Ω encostando na borda
+externa do anel — sem segunda porta, sem perna em curto. **`g_slot`
+precisa subir para ≥0,5 mm** (hoje está em 0,1 mm no script, copiado
+do valor de referência de Misonou, que também é sub-PCB) e os raios
+(`R_out`, `r_hole`) precisam ser re-otimizados para RO5880/0,75mm nessa
+folga maior — capacitância menor por causa do gap maior tende a exigir
+laço maior (mais indutância) para compensar e voltar a 2,87 GHz; ordem
+de grandeza ainda não determinada por simulação real (ver seção 6).
+Vantagem adicional para o requisito de fabricação: sem a alimentação
+"em duas pernas longas até a borda" do design ômega, o anel de um porto
+provavelmente não precisa de um substrato tão grande quanto os
+24×22 mm do `Omega_RO5880` (que cresceram em boa parte por causa do
+comprimento das pernas, não do laço em si) — mas isso também precisa
+ser confirmado por simulação, não é garantido.
+
+### Topologia antiga (ômega de DOIS PORTOS) — histórico, não mais alvo
 
 Baseada em:
 > O. R. Opaluch, N. Oshnik, R. Nelz, E. Neu,
@@ -281,6 +355,91 @@ para a tabela final completa e o gráfico (`plot_S11_verificado.png`).
 
 ## 6. Próximos passos
 
+**Ordem de prioridade mudou em 2026-09-18 (ver seção 0) — os itens 1–4
+abaixo são o histórico da ômega de dois portos e ficam CONGELADOS
+(não bloqueiam mais nada, não são mais o alvo de fabricação). O plano
+ativo agora é a lista "Plano ativo" logo abaixo.**
+
+### Plano ativo (a partir de 2026-09-18)
+
+1. **Re-projetar como UM PORTO com feições ≥0,5mm.** Candidata: anel
+   fendido (`build_ring` em `scripts/nv_resonators_compare.py`) — ver
+   seção 3. Subir `G_SLOT` de 0,1mm para ≥0,5mm e rodar otimização
+   (Optimetrics, mesmo método multivariável já usado com sucesso na
+   ômega — ver `add_ro5880_optimization_multivar` como modelo) variando
+   `R_out` (e possivelmente `r_hole`, dentro do limite de 0,5mm) até
+   casar em 2,87GHz. **Ainda não rodado.**
+2. **Definir tamanho de substrato para fabricação** a partir do
+   resultado do item 1 — hoje (18/09) só se sabe que precisa ser maior
+   que o laço final + margem; ver recomendação provisória de corte
+   abaixo, mas ela é uma estimativa de segurança, não um resultado
+   simulado.
+3. Repetir os passos já validados como metodologia para a topologia
+   nova: validar malha do gap, sweep discreto na faixa 2,5–3,2GHz
+   (não confiar em Interpolating fora do ponto de adaptação — seção 5),
+   reconferir com diamante presente, avaliar uniformidade de campo,
+   só then testar alumina.
+4. **Confirmar com o Achiles:** tipo exato de alumina/εr, e se o plano
+   de terra continua sendo a suposição do porta-amostra de titânio do
+   artigo (nunca confirmada) ou muda com o processo de São Carlos.
+
+### Recomendação provisória para o corte de hoje (18/09/2026)
+
+**Sem simulação nova rodada ainda para o anel de um porto com gap
+≥0,5mm — isto é uma estimativa de segurança por raciocínio físico, não
+um resultado validado.** Gap maior (0,5mm vs 0,1–0,15mm testado antes)
+reduz a capacitância do laço, o que tende a EXIGIR um laço maior
+(mais indutância) para voltar a ressoar em 2,87GHz — na ômega de dois
+portos, o laço otimizado (`r_ap+r_w`) ficou perto de 1,4mm de raio com
+gap de 0,15mm; um laço de anel único porto com gap de 0,5mm pode
+plausivelmente precisar de um raio de laço da ordem de poucos mm
+(uma estimativa física independente já registrada em
+`nv_resonators_compare.py`, para um mecanismo de ressonância diferente
+— laço em curto de meia-onda —, aponta ~6mm de raio como ordem de
+grandeza nesse substrato; não é o mesmo circuito, mas dá uma noção de
+escala).
+
+Se o corte de hoje for **só o substrato em branco** (RO5880 cru, sem
+padrão de trilha — que segundo o Thiago será depositado depois em São
+Carlos), a recomendação é cortar com folga generosa em vez de ajustar
+fino agora, já que dá para cortar/aparar depois mas não para alargar:
+- **Sugestão: pelo menos 40×40mm por peça** (dá margem confortável para
+  um laço de até ~15mm de raio + linha de alimentação + borda), ou
+  **50×50mm** se quiser alinhar com o tamanho de alumina já disponível
+  (seção 2) para facilitar o alinhamento de amostra depois.
+- Cortar **mais de uma peça** no mesmo tamanho, se o material permitir
+  — cobre o risco de a otimização pedir algo ligeiramente diferente
+  sem precisar de um novo corte depois.
+- **Não cortar mais fino que isso sem rodar a otimização primeiro** —
+  se o laço final precisar de mais espaço que o cortado, a peça vira
+  sucata.
+
+**Bloqueio de execução:** este ambiente de trabalho não tem o Ansys
+Electronics Desktop / pyaedt instalados — todo o trabalho aqui é edição
+de código, sem rodar HFSS. O item 1 do plano ativo precisa rodar numa
+máquina com AEDT 2025 R2 Student + pyaedt 1.6.0 (a mesma usada nas
+otimizações da seção 5) antes de qualquer corte fino de trilha.
+
+### Perguntas em aberto para o orientador
+- **[NOVO] Confirmar o mínimo de 0,5mm**: vale para toda feição crítica
+  (gap E largura de trilha estreita), ou só para o gap? Afeta quanto
+  espaço sobra para o `r_hole`/abertura óptica.
+- **[NOVO] O corte de hoje é só o substrato em branco, ou já inclui
+  algum padrão?** Confirmar antes de considerar a peça "gasta".
+- Tamanho do diamante e área que precisa de B₁ uniforme? (define o raio
+  do furo/abertura)
+- Faixa de B₀ pretendida? (define a banda necessária)
+- Papel exato da alumina, e qual tipo/εr exato (pedido explícito do
+  Thiago em 18/09 — existem vários tipos de alumina comercial).
+- **O plano de terra vai ser mesmo titânio, do tamanho do porta-amostra
+  do artigo (24×15mm no artigo, 32×29mm no design tunado)? Ou é cobre
+  de PCB comum, outro metal, outro tamanho, agora que a deposição e o
+  terra serão feitos em São Carlos?** Essa suposição nunca foi
+  confirmada — foi só copiada do setup do artigo de referência. Todo o
+  S11 reportado depende dela; se mudar, precisa reconferir.
+
+### Histórico congelado (ômega de dois portos, superado 2026-09-18)
+
 1. ~~Fechar a validação do `Omega_Ref_Glass`~~ — aceito como validação
    parcial suficiente (ver seção 5); não bloqueia mais o resto.
 2. ~~Tunar o `Omega_RO5880` para 2,87 GHz~~ — **concluído**: `r_ap=0,345
@@ -293,35 +452,10 @@ para a tabela final completa e o gráfico (`plot_S11_verificado.png`).
    S11 entre −31,4 e −32,4dB em toda a faixa 2,5–3,2GHz (era −27,4 a
    −27,9dB sem o diamante). Confirma a expectativa: a cauda larga é
    robusta ao carregamento dielétrico.
-3. **Avaliar o campo** (o que realmente decide, próximo passo real):
-   no design `Omega_RO5880_Diamond`, plotar H no plano da abertura
-   (altura do diamante), confirmar predominância de Hz, medir
-   uniformidade sobre a área do diamante, comparar com 170–280 A/m
-   @ 1 W (referência do artigo).
-4. **Alumina** por último, como superstrato, para quantificar o
-   deslocamento de f₀. **Já implementado** no `Omega_RO5880` como bloco
-   opcional (`RO["alumina"]["enable"]`, 25×25×0,67 mm, εr=9,8) —
-   desativado por padrão até o passo 2 fechar; ligar só depois de tunar
-   o design sem carga, senão não se sabe separar o efeito da geometria
-   do efeito da alumina.
-
-**Bloqueio de execução:** este ambiente de trabalho não tem o Ansys
-Electronics Desktop / pyaedt instalados — todo o trabalho aqui é edição
-de código, sem rodar HFSS. Os itens 1–4 dependem de execução numa
-máquina com AEDT 2025 R2 Student + pyaedt 1.6.0 para gerar resultados
-reais e não apenas geometria pronta.
-
-### Perguntas em aberto para o orientador
-- Tamanho do diamante e área que precisa de B₁ uniforme? (define `r_ap`)
-- Faixa de B₀ pretendida? (define a banda necessária)
-- Acesso a litografia ou só PCB? (define a viabilidade do gap)
-- Papel exato da alumina?
-- A recomendação de ômega veio deste artigo ou de outro trabalho do grupo?
-- **O plano de terra vai ser mesmo titânio, do tamanho do porta-amostra
-  do artigo (24×15mm no artigo, 32×29mm no design tunado)? Ou é cobre
-  de PCB comum, outro metal, outro tamanho?** Essa suposição nunca foi
-  confirmada — foi só copiada do setup do artigo de referência. Todo o
-  S11 reportado depende dela; se mudar, precisa reconferir.
+3. Avaliar o campo — não chegou a ser feito nesta topologia (superada
+   antes de chegar nesse passo).
+4. Alumina — implementado e testado (ver `results/README.md`), mas na
+   topologia agora superada.
 
 ## 7. Lições do que já deu errado
 
