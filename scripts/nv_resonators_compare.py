@@ -43,6 +43,23 @@ SASAKI_VALIDATION). Passo 1 da migracao (troca de material pra RO5880)
 e o modo ativo agora - ver SASAKI_MODEL. Ver roadmap.md para o plano
 completo de migracao.
 
+>>> PIVO 2026-09-21 (ver roadmap.md secao 0, a atualizar) <<<
+A migracao disco+furo excentrico (Sasaki/Misonou) fica PAUSADA: o
+Passo 17 (otimizacao do stub) convergiu em diferencas de ~0.01mm entre
+variacoes testadas (ex. stub_distance=30,18mm vs 30,20mm) para acertar
+a ressonancia - precisao de fabricacao inviavel (o piso real do
+processo e 0,5mm, ~50x maior que isso). Nova candidata: ESPIRAL de N
+voltas, trilha UNICA continua, generalizacao direta do anel de 1 volta
+(build_ring, ja existente neste arquivo) - ver build_spiral() e
+SPIRAL_MODEL, secao "(D) ESPIRAL" abaixo. TODA dimensao livre (largura
+da trilha, espaco entre voltas, raio externo) fica em multiplos de
+0,5mm por construcao; so o numero de voltas (inteiro, discreto por
+natureza) varia. Vantagem esperada sobre o anel de 1 volta E sobre o
+disco: mais voltas -> mais indutancia (~N^2, formula de Wheeler
+modificada) -> impedancia natural no ponto de ressonancia mais perto
+de 50 ohm, endereçando a causa raiz do casamento ruim do disco
+(Zin~0,55+0,60j ohm medido no Passo 13 - quase um curto).
+
 Constroi DUAS topologias no MESMO projeto, com placa, airbox, setup e
 varredura identicos, para que qualquer diferenca observada venha da
 topologia e nao das condicoes de simulacao. A topologia (B) fica so
@@ -81,6 +98,8 @@ Uso: python nv_resonators_compare.py
 """
 
 import copy
+import math
+import re
 import time
 
 from ansys.aedt.core import Hfss
@@ -142,7 +161,12 @@ AIRGAP = 26.5         # > lambda0/4 = 26.1 mm - perto do minimo fisico
 # Passo 8 (RO5880_STEP8_NARROW_NECK) - R/s novos, nao sabemos ainda
 # exatamente onde a ressonancia vai cair (a formula ja se mostrou
 # pouco confiavel para prever isso com precisao).
-F_START, F_STOP, F_STEP = 2.0, 4.0, 0.01
+# 2026-09-21: ALARGADA de novo (1.0-5.0GHz) para o diagnostico da
+# espiral (build_spiral_single, ver PIVO no topo do arquivo) - geometria
+# nova, a estimativa analitica (Wheeler modificado, L~0.68uH/C~4.5fF
+# para N=6/R_out=10mm) so serviu para escolher o ponto de partida, nao
+# e confiavel para o valor final (mesma licao repetida com o Sasaki).
+F_START, F_STOP, F_STEP = 1.0, 5.0, 0.02
 
 # 2026-09-18: controla o que o __main__ faz com o design Ring_Unloaded.
 #   "diagnostic_single"  : resolve so a geometria nominal (1 solve) na
@@ -206,8 +230,26 @@ F_START, F_STOP, F_STEP = 2.0, 4.0, 0.01
 #       RO5880_STEP16_STUB (disco + linha reta + STUB ABERTO EM
 #       DERIVACAO, calculado analiticamente por teoria de linha de
 #       transmissao a partir do Zin medido) - imprime dB(S11) e Zin
-#       direto no terminal. MODO ATIVO AGORA.
-RING_MODE = "extract_zin"
+#       direto no terminal. RESULTADO: FUNCIONOU DE VERDADE - vale de
+#       -6.94dB, so na frequencia errada (2.37GHz, nao 2.87GHz).
+#   "optimize_stub" : Passo 17 - add_stub_optimization() (stub_distance,
+#       stub_length livres, R_disk/s_off/g/r fixos) no dict
+#       RO5880_STEP17_STUB_OPT, partindo de um chute escalado
+#       (2.87/2.37) do Passo 16 - reajusta a posicao de um vale que JA
+#       EXISTE e ja e fundo, bem mais tratavel que otimizar as cegas.
+#       Resultado (ver resultado_stub_opt.txt/resultado_variacoes.txt):
+#       convergiu em diferencas de ~0.01mm entre variacoes
+#       (stub_distance=30.18 vs 30.20mm) - precisao de fabricacao
+#       inviavel (piso real e 0.5mm). Motivou o PIVO no topo do arquivo.
+#   "build_spiral_single" : Passo 18 (2026-09-21, NOVA linha de
+#       trabalho - ver PIVO no topo do arquivo e roadmap.md secao 0).
+#       Constroi build_spiral() com SPIRAL_MODEL (trilha em espiral de
+#       N voltas, geometria nunca testada ainda) e roda 1 solve na
+#       faixa larga (F_START/F_STOP abertos de proposito) so para
+#       achar onde a ressonancia cai de verdade - mesma disciplina ja
+#       usada para o anel e o disco (nunca confiar em formula/
+#       extrapolacao para o valor final). MODO ATIVO AGORA.
+RING_MODE = "build_spiral_single"
 
 MIN_FEATURE = 0.5     # mm - piso de fabricacao pedido pelo Achiles em
                       # 18/09/2026 (substitui o limite antigo de PCB via
@@ -594,9 +636,84 @@ RO5880_STEP16_STUB["stub_length"] = 20.3
 RO5880_STEP16_STUB["feed_len"] = 46.6
 RO5880_STEP16_STUB["L_sub"] = 118.0
 RO5880_STEP16_STUB["W_sub"] = 52.0
+# 2026-09-21: RODADO - FUNCIONOU DE VERDADE. Vale de -6.94dB em
+# 2.37GHz (nao 2.87GHz) - de longe o melhor resultado desde a
+# validacao em FR4 (-7.3dB). O conceito do stub esta provado; so
+# precisa deslocar o vale ~500MHz pra cima (lambda_g estimado a mao
+# nao bateu exato, ou a impedancia do disco muda o suficiente fora de
+# 2.87GHz para deslocar o ponto de casamento). Proximo passo: NAO
+# recalcular a mao de novo - otimizar estas duas dimensoes de verdade,
+# ja partindo de um ponto que funciona (bem mais tratavel que as
+# tentativas anteriores no taper, que nunca tinham um ponto de partida
+# real). Ver add_stub_optimization.
+
+# ---------------------------------------------------------------
+# Passo 17: otimizacao fina do stub (Optimetrics, 2 variaveis) para
+# mover o vale de 2.37GHz para 2.87GHz. Chute inicial escalado pela
+# razao de frequencia (2.87/2.37~1.211): dividir as duas dimensoes por
+# esse fator desloca a ressonancia pra cima aproximadamente na mesma
+# proporcao (stub_distance/stub_length ~30.2/16.8mm).
+# ---------------------------------------------------------------
+RO5880_STEP17_STUB_OPT = copy.deepcopy(RO5880_STEP16_STUB)
+RO5880_STEP17_STUB_OPT["name"] = "RO5880_Step17_StubOpt"
+RO5880_STEP17_STUB_OPT["stub_distance"] = 30.2
+RO5880_STEP17_STUB_OPT["stub_length"] = 16.8
 
 # qual dict usar agora - mudar aqui para avancar de passo
-SASAKI_MODEL = RO5880_STEP16_STUB
+SASAKI_MODEL = RO5880_STEP17_STUB_OPT
+
+# ---------------------------------------------------------------
+# (D) ESPIRAL - nova candidata ativa (2026-09-21, ver PIVO no topo do
+# arquivo e roadmap.md secao 0). Trilha UNICA continua em espiral de
+# Arquimedes (raio decresce linearmente com o angulo), N voltas,
+# alimentada por -x igual ao anel de 1 volta (build_ring) - generaliza
+# essa mesma funcao em vez de reaproveitar a geometria do disco+furo
+# excentrico do Sasaki (abandonada por exigir precisao de fabricacao
+# de ~0.01mm, ver historico em RO5880_STEP17_STUB_OPT acima).
+#
+# REGRA DE PROJETO (pedido do usuario, 2026-09-21): toda dimensao
+# livre (largura da trilha, espaco entre voltas, raio externo) fica em
+# MULTIPLO DE 0.5mm por construcao - nada de otimizacao continua
+# (Optimetrics Optimization) nessas variaveis, so grade discreta
+# (Parametric com step=0.5mm) ou variacao manual. So o numero de
+# voltas N e livre por natureza (inteiro, discreto).
+SPIRAL_N_TURNS = 6      # numero de voltas - unico grau de liberdade
+                        # "grande" (muda a topologia, nao so um numero)
+SPIRAL_W = MIN_FEATURE  # largura da trilha - piso de fabricacao
+SPIRAL_S = MIN_FEATURE  # espaco radial entre voltas - piso de fabricacao
+SPIRAL_R_OUT = 10.0     # raio externo (mm), multiplo de 0.5mm
+
+# Ponto de partida escolhido por estimativa analitica (formula de
+# Wheeler modificada para indutor espiral circular, K1=2.34/K2=2.75):
+# com N=6, R_out=10mm, passo=w+s=1.0mm -> R_in=4mm (abertura optica
+# Ø8mm, folga em torno do diamante 3x3mm do roadmap.md item 18),
+# davg=14mm, rho=0.43 -> L~0.68uH. Para ressoar em 2.87GHz precisaria
+# de C~4.5fF (fenda/capacitancia distribuida da propria ponta aberta).
+# MESMO AVISO DE SEMPRE (repetido varias vezes neste arquivo para o
+# Sasaki): essa conta so serve para escolher onde comecar a procurar
+# no HFSS - nao e confiavel para prever o valor final. Ver
+# RING_MODE="build_spiral_single" (1 solve, faixa larga) para achar a
+# ressonancia real antes de qualquer ajuste.
+# SPIRAL_FEED_GAP: 2026-09-21, apos a 1a rodada (uniao galvanica
+# direta, feed_gap=0) medir a ressonancia quase EXATA (2.88GHz, alvo
+# 2.87GHz) mas Re(Zin)=0.08 ohm - passa a usar acoplamento CAPACITIVO
+# (gap entre a linha e a espiral, em vez de uni-las) para tentar casar
+# com 50 ohm sem precisar de rede de casamento separada. Comeca no
+# proprio piso de fabricacao (0.5mm) - e o unico valor "gratis" nessa
+# regra de projeto; se precisar de outro, so em passos de 0.5mm.
+SPIRAL_FEED_GAP = MIN_FEATURE
+
+SPIRAL_MODEL = dict(
+    name="Spiral_6turns_gap0p5",
+    eps_sub=EPS_SUB, tand_sub=TAND_SUB, h_sub=H_SUB,
+    w=SPIRAL_W, s=SPIRAL_S, N=SPIRAL_N_TURNS, R_out=SPIRAL_R_OUT,
+    feed_w=WF, feed_gap=SPIRAL_FEED_GAP, feed_overlap_margin=0.3,
+    L_sub=55.0, W_sub=50.0, airgap=AIRGAP,
+    # abertura minima aceitavel (raio, mm) antes de abortar a
+    # construcao - so uma protecao basica; o minimo real depende do
+    # diamante (3x3mm, roadmap.md item 18) e ainda nao foi confirmado.
+    r_min_aperture=1.0,
+)
 
 # --- (B) omega ---
 R_LOOP = 6.0          # raio medio do laco  <-- varrer 3..12 mm
@@ -692,6 +809,57 @@ def check_geometry():
     print(f"               curto em x = {x_short:.1f} mm")
     print(f"  alumina    : {'SIM' if BUILD_ALUMINA else 'nao (1a rodada)'}")
     print()
+
+
+def check_spiral_geometry(p):
+    """Verificacao geometrica da espiral (ver secao "(D) ESPIRAL" e
+    build_spiral()), rodada ANTES de abrir o AEDT - mesmo espirito de
+    check_geometry() acima, so que para o dict `p` (SPIRAL_MODEL) em
+    vez das constantes globais do anel/omega.
+
+    Confirma que w e s nao furam o piso de fabricacao, que a abertura
+    interna (R_in) resultante do numero de voltas nao fica negativa ou
+    pequena demais, e que R_out cabe na placa - tudo isso e conhecido
+    ANTES de construir qualquer geometria no HFSS, ao contrario da
+    frequencia de ressonancia real (essa so o solve mostra).
+    """
+    problems = []
+    if p["w"] < MIN_FEATURE:
+        problems.append(f"espiral: w={p['w']}mm abaixo do minimo de "
+                         f"fabricacao ({MIN_FEATURE}mm)")
+    if p["s"] < MIN_FEATURE:
+        problems.append(f"espiral: s={p['s']}mm abaixo do minimo de "
+                         f"fabricacao ({MIN_FEATURE}mm)")
+    pitch = p["w"] + p["s"]
+    r_in = p["R_out"] - p["N"] * pitch
+    if r_in <= p.get("r_min_aperture", 1.0):
+        problems.append(
+            f"espiral: R_in={r_in:.2f}mm pequeno/negativo demais para "
+            f"N={p['N']} voltas com R_out={p['R_out']}mm "
+            f"(pitch={pitch}mm/volta) - reduza N ou aumente R_out")
+    if 2 * p["R_out"] >= min(p["L_sub"], p["W_sub"]):
+        problems.append(f"espiral: R_out={p['R_out']}mm nao cabe na "
+                         f"placa {p['L_sub']}x{p['W_sub']}mm")
+    if p["airgap"] < 299.792458 / F0_GHZ / 4:
+        problems.append(f"espiral: airgap {p['airgap']} < lambda0/4 = "
+                         f"{299.792458/F0_GHZ/4:.1f} mm")
+    feed_gap = p.get("feed_gap", 0.0)
+    if 0 < feed_gap < MIN_FEATURE:
+        problems.append(f"espiral: feed_gap={feed_gap}mm entre 0 e o "
+                         f"minimo de fabricacao ({MIN_FEATURE}mm) - nao "
+                         f"e nem uniao direta (0) nem um gap fabricavel")
+
+    if problems:
+        raise SystemExit("VERIFICACAO DA ESPIRAL FALHOU:\n  - "
+                          + "\n  - ".join(problems))
+
+    feed_desc = (f"gap capacitivo={feed_gap}mm" if feed_gap > 0
+                 else "uniao galvanica direta")
+    print(f"Verificacao da espiral OK: N={p['N']} voltas, w={p['w']}mm, "
+          f"s={p['s']}mm (pitch={pitch}mm/volta), R_out={p['R_out']}mm, "
+          f"R_in={r_in:.2f}mm (abertura optica, Ø{2*r_in:.2f}mm), "
+          f"alimentacao: {feed_desc}")
+    return r_in
 
 
 # ---------------------------------------------------------------
@@ -1246,6 +1414,45 @@ def add_joint_optimization(hfss):
     return setup
 
 
+def add_stub_optimization(hfss):
+    """Otimizacao (Quasi-Newton) do stub aberto em derivacao (Passo
+    17), mirando profundidade real em 2.87GHz - nao mais so a
+    frequencia.
+
+    Diferente de TODAS as tentativas anteriores de casamento (taper,
+    Passos 4/5), este ponto de partida JA E um casamento real (-6.94dB
+    no Passo 16, so na frequencia errada - 2.37GHz em vez de 2.87GHz).
+    Por isso a otimizacao aqui deve ser bem mais tratavel: nao esta
+    procurando as cegas por um vale que pode nem existir, esta so
+    reajustando a posicao de um vale que ja existe e ja e fundo.
+
+    R_disk, s_off, g, r ficam FIXOS - a frequencia NATURAL do disco ja
+    foi resolvida (Passo 3); o stub so precisa alinhar SEU proprio
+    ponto de casamento com essa frequencia, nao redefini-la.
+
+    Faixas em torno do chute escalado (30.2/16.8mm, ver historico em
+    RO5880_STEP17_STUB_OPT) - a razao de escala usada para chegar
+    nesses valores (2.87/2.37) e so uma aproximacao de primeira ordem,
+    entao a faixa da folga de +-8mm para o otimizador corrigir.
+    """
+    setup = hfss.optimizations.add(
+        calculation="dB(S(Port1,Port1))",
+        ranges={"Freq": f"{F0_GHZ}GHz"},
+        variables=["stub_distance", "stub_length"],
+        optimization_type="Optimization",
+        condition="<=",
+        goal_value=-15,
+        goal_weight=1,
+        name="Opt_stub_2p87GHz")
+    setup.add_variation(
+        "stub_distance", min_value=22.0, max_value=38.0,
+        starting_point=30.2)
+    setup.add_variation(
+        "stub_length", min_value=9.0, max_value=25.0,
+        starting_point=16.8)
+    return setup
+
+
 # ---------------------------------------------------------------
 # 4B. Topologia B - omega
 # ---------------------------------------------------------------
@@ -1305,6 +1512,174 @@ def build_omega(hfss):
     hfss.lumped_port(assignment=port.name,
                      integration_line=hfss.axis_directions.ZNeg,
                      impedance=50, name="Port1")
+
+
+# ---------------------------------------------------------------
+# 4D. Topologia D - espiral (candidata ativa, ver PIVO no topo do
+#     arquivo e secao "(D) ESPIRAL" nos parametros)
+# ---------------------------------------------------------------
+def build_spiral(hfss, p):
+    """Ressoador espiral de 1 porto - generalizacao de build_ring()
+    para N voltas.
+
+    Trilha UNICA continua em espiral de Arquimedes (o raio decresce
+    linearmente com o angulo percorrido): comeca em R_out, no mesmo
+    ponto onde o anel de 1 volta encosta na linha de alimentacao
+    (theta=180 graus, ou seja x=-R_out, y=0, entrando por -x), e
+    termina em R_in = R_out - N*(w+s), EM ABERTO - a propria ponta da
+    espiral e o "gap"/circuito aberto, nao precisa de uma fenda radial
+    separada como no anel de 1 volta (build_ring).
+
+    Por que isso deve casar melhor que o anel de 1 volta OU o disco+
+    furo do Sasaki: a indutancia de um espiral cresce com N^2 (formula
+    de Wheeler) para o mesmo raio externo - mais voltas -> impedancia
+    caracteristica mais alta no ponto de ressonancia, mais perto de 50
+    ohm por natureza. O anel de 1 volta mediu Zin perto de curto
+    (razao de transformacao ~91:1, ver roadmap.md Passo 13 no disco) -
+    a expectativa era que a espiral precisasse de bem menos transformacao.
+
+    RESULTADO DA 1a RODADA (2026-09-21, feed_gap=0 - linha unida
+    direto na espiral): a ressonancia caiu quase EXATAMENTE no alvo
+    (Im(Zin)=0 em f=2.88GHz, so 10MHz do alvo de 2.87GHz, sem nenhuma
+    otimizacao - valida o dimensionamento por Wheeler muito melhor do
+    que qualquer estimativa ja feita para o Sasaki). MAS Re(Zin)=0.08
+    ohm nesse ponto - pior ainda que o disco (0.55 ohm) - por isso
+    dB(S11) ficou praticamente plano (sem vale visivel): o problema
+    NUNCA foi a frequencia, e casamento de impedancia (a conexao
+    galvanica direta encosta a linha justamente no ponto de baixa
+    impedancia do laco ressonante).
+
+    CORRECAO (feed_gap > 0, ATIVO AGORA): em vez de unir a linha
+    direto na espiral, deixa um GAP CAPACITIVO de p['feed_gap'] mm
+    (piso de fabricacao) entre a ponta da linha e a espiral -
+    acoplamento em serie por um capacitor de gap, tecnica padrao para
+    alimentar ressoadores de Q alto (filtros hairpin/ring, SRR de
+    metamateriais) sem precisar de rede de casamento separada (taper/
+    stub) como foi tentado sem sucesso no Sasaki. O gap em si ja e uma
+    dimensao no piso de 0.5mm por construcao.
+
+    IMPORTANTE - geometria NAO e parametrica dentro do HFSS: os pontos
+    da espiral sao calculados aqui em Python (nao existe um "circulo
+    espiral" nativo no modelador) e gravados como coordenadas fixas em
+    mm no momento da construcao. Mudar N (numero de voltas) muda a
+    CONTAGEM de pontos da polyline, entao precisa reconstruir do zero
+    (rodar o script de novo com outro dict `p`) - nao da pra deixar N
+    como uma variavel HFSS comum e otimizar continuamente, o que
+    tambem calha com a regra de projeto (grade de 0.5mm, sem
+    otimizacao continua). R_out, w, s e feed_w SIM viram variaveis
+    HFSS normais (visiveis/editaveis no AEDT), mas qualquer varredura
+    delas deve usar passo de 0.5mm (Optimetrics Parametric), nunca
+    Optimization continua - ver regra no bloco de parametros.
+
+    p: dict com eps_sub, tand_sub, h_sub, w, s, N, R_out, feed_w,
+       feed_gap (0 = uniao galvanica direta, antigo comportamento;
+       >0 = gap capacitivo de acoplamento, ver acima),
+       feed_overlap_margin (so usado se feed_gap=0), L_sub, W_sub,
+       airgap, name (ver SPIRAL_MODEL).
+    """
+    hfss["h_sub"] = f"{p['h_sub']}mm"
+    hfss["L_sub"] = f"{p['L_sub']}mm"
+    hfss["W_sub"] = f"{p['W_sub']}mm"
+    hfss["airgap"] = f"{p['airgap']}mm"
+    hfss["Wf"] = f"{p['feed_w']}mm"
+    hfss["spiral_w"] = f"{p['w']}mm"
+    hfss["R_out"] = f"{p['R_out']}mm"
+
+    sub_mat = get_or_create_material(
+        hfss, f"sub_{p['name']}", p["eps_sub"], p["tand_sub"])
+    hfss.modeler.create_box(
+        origin=["-L_sub/2", "-W_sub/2", "0mm"],
+        sizes=["L_sub", "W_sub", "h_sub"],
+        name="Substrate", material=sub_mat)
+    ground = hfss.modeler.create_rectangle(
+        orientation="XY", origin=["-L_sub/2", "-W_sub/2", "0mm"],
+        sizes=["L_sub", "W_sub"], name="Ground")
+    hfss.assign_perfecte_to_sheets(ground.name)
+
+    # --- trilha em espiral ---
+    # pitch = avanco radial por volta completa (w+s, ambos no piso de
+    # fabricacao por padrao - ver check_spiral_geometry, ja rodada
+    # antes de chegar aqui). theta comeca em pi (aponta para -x, mesmo
+    # lado por onde entra a linha de alimentacao) e cresce 2*pi por
+    # volta; r decresce linearmente ate R_in no final da ultima volta.
+    pitch = p["w"] + p["s"]
+    n_turns = p["N"]
+    r_out_mm = p["R_out"]
+    r_in_mm = r_out_mm - n_turns * pitch
+
+    points_per_turn = 72  # 5 graus/segmento - suave o bastante p/ malha
+    n_points = int(round(n_turns * points_per_turn)) + 1
+    pts = []
+    for i in range(n_points):
+        t = i / points_per_turn  # numero de voltas percorridas (fracao)
+        theta = math.pi + 2 * math.pi * t
+        r = r_out_mm - pitch * t
+        x = r * math.cos(theta)
+        y = r * math.sin(theta)
+        pts.append([f"{x:.5f}mm", f"{y:.5f}mm", "h_sub"])
+
+    spiral = hfss.modeler.create_polyline(
+        points=pts, segment_type="Line", xsection_type="Line",
+        xsection_orient="Z", xsection_width="spiral_w",
+        name="Spiral_trace")
+
+    # linha de alimentacao de 50 ohm entrando por -x - duas opcoes,
+    # controladas por p['feed_gap'] (ver nota grande no topo da
+    # funcao sobre por que a conexao galvanica direta nao funcionou).
+    gap_mm = p.get("feed_gap", 0.0)
+    hfss["feed_gap"] = f"{gap_mm}mm"
+
+    if gap_mm > 0:
+        # ACOPLAMENTO CAPACITIVO (ativo agora): a linha PARA antes de
+        # tocar a espiral. A borda fisica da trilha da espiral, no
+        # ponto inicial (-R_out, 0), fica aproximadamente em
+        # x=-R_out-spiral_w/2 (secao transversal de largura spiral_w
+        # centrada na linha de centro) - por isso o calculo abaixo
+        # subtrai spiral_w/2 ALEM do feed_gap, para o gap fisico real
+        # entre as duas bordas de metal ficar em feed_gap mm, nao
+        # feed_gap+spiral_w/2 (nem menos que feed_gap, se nao
+        # descontasse nada). Nao e um encaixe garantido a laser -
+        # inspecione a distancia real no AEDT (Modeler > Measure) e
+        # ajuste feed_gap se precisar, sempre em passos de 0.5mm.
+        feed = hfss.modeler.create_rectangle(
+            orientation="XY", origin=["-L_sub/2", "-Wf/2", "h_sub"],
+            sizes=["L_sub/2 - R_out - spiral_w/2 - feed_gap", "Wf"],
+            name="Feed_line")
+        hfss.assign_perfecte_to_sheets(feed.name)
+        spiral.name = "Spiral_conductor"
+        hfss.assign_perfecte_to_sheets(spiral.name)
+    else:
+        # CONEXAO GALVANICA DIRETA (feed_gap=0) - comportamento
+        # original, mantido so para comparacao/regressao. Folga extra
+        # (feed_overlap_margin) para garantir sobreposicao real com a
+        # ponta da espiral antes do unite - mesmo cuidado ja
+        # documentado para o disco+furo do Sasaki (roadmap.md 5.1: uma
+        # fresta de poucos micrometros pode nao acusar erro no unite
+        # mas deixar o condutor partido em dois pedacos desconectados).
+        hfss["feed_overlap_margin"] = f"{p.get('feed_overlap_margin', 0.3)}mm"
+        feed = hfss.modeler.create_rectangle(
+            orientation="XY", origin=["-L_sub/2", "-Wf/2", "h_sub"],
+            sizes=["L_sub/2 - R_out + spiral_w/2 + feed_overlap_margin",
+                   "Wf"],
+            name="Feed_line")
+        hfss.modeler.unite([spiral, hfss.modeler["Feed_line"]])
+        spiral.name = "Conductor"
+        hfss.assign_perfecte_to_sheets(spiral.name)
+
+    port = hfss.modeler.create_rectangle(
+        orientation="YZ", origin=["-L_sub/2", "-Wf/2", "0mm"],
+        sizes=["Wf", "h_sub"], name="Port1_sheet")
+    hfss.lumped_port(assignment=port.name,
+                     integration_line=hfss.axis_directions.ZNeg,
+                     impedance=50, name="Port1")
+
+    feed_mode = (f"gap capacitivo de {gap_mm}mm (Feed_line + "
+                 f"Spiral_conductor separados)" if gap_mm > 0 else
+                 "uniao galvanica direta (Conductor unico)")
+    print(f"  espiral construida: N={n_turns} voltas, R_out={r_out_mm}mm, "
+          f"R_in={r_in_mm:.2f}mm, pitch={pitch}mm/volta, "
+          f"{n_points} pontos na polyline, alimentacao: {feed_mode}")
+    return r_in_mm
 
 
 def add_ring_wideband_scan(hfss):
@@ -1413,7 +1788,8 @@ def add_ring_optimization_multivar(hfss):
 # (p['name']), um por passo de migracao, para nao misturar resultados
 # no mesmo projeto (facilita comparar os passos lado a lado depois).
 DISK_MODES = ("validate_sasaki_fr4", "optimize_disk_2p87",
-              "optimize_taper", "optimize_joint", "extract_zin")
+              "optimize_taper", "optimize_joint", "extract_zin",
+              "optimize_stub")
 if RING_MODE in DISK_MODES:
     TOPOLOGIES = {
         SASAKI_MODEL["name"]:
@@ -1435,6 +1811,13 @@ elif RING_MODE == "test_feed_angles":
         m["name"]: (lambda h, m=m: build_disk_hole_resonator(h, m))
         for m in ANGLE_TEST_MODELS
     }
+elif RING_MODE == "build_spiral_single":
+    # Passo 18 (2026-09-21, NOVA candidata - ver PIVO no topo do
+    # arquivo): espiral de N voltas, geometria nunca testada ainda -
+    # ver build_spiral() e SPIRAL_MODEL.
+    TOPOLOGIES = {
+        SPIRAL_MODEL["name"]: lambda h: build_spiral(h, SPIRAL_MODEL)
+    }
 else:
     # 2026-09-18: so o Ring por padrao - e a candidata de UM PORTO
     # pedida pelo Achiles (ver README secao 0). A Omega (dois portos)
@@ -1453,7 +1836,6 @@ def print_zin_table(hfss, target_freq=F0_GHZ, compact=False):
     ver RING_MODE="test_feed_angles"); senao imprime a tabela inteira e
     aponta onde Im(Zin) mais se aproxima de zero (a ressonancia real).
     """
-    import math
     try:
         sol = hfss.post.get_solution_data(
             expressions=["S(Port1,Port1)"],
@@ -1506,9 +1888,96 @@ def print_zin_table(hfss, target_freq=F0_GHZ, compact=False):
         print(f"  nao consegui extrair Zin ({e}).")
 
 
+def print_all_optimetrics_variations(hfss, var_names, target_freq=F0_GHZ):
+    """Depois de uma otimizacao (Optimetrics), imprime dB(S11) em
+    target_freq PARA CADA VARIACAO testada, no terminal - sem precisar
+    de GUI/screenshot/export manual de CSV.
+
+    2026-09-21: descoberto (via hfss.existing_analysis_sweeps) que o
+    pyaedt/AEDT expoe cada variacao testada pelo Optimetrics como um
+    "sweep" proprio dentro do mesmo Setup, com o NOME literal
+    contendo os valores de cada variavel, ex.:
+        "Setup1 - stub_distance='30.1mm' stub_length='16.8mm' : Table"
+    (junto de "Setup1 : Sweep1" generico e "Setup1 : LastAdaptive",
+    que so tem a variacao nominal - 1 ponto so). As duas tentativas
+    anteriores (leitura simples sem variacao, e depois
+    sol.set_active_variation(i) sobre "Setup1 : Sweep1") pegavam
+    sempre esse ponto nominal errado (dB(S11)=-0.06, sempre a MESMA
+    variacao) - essa e a causa raiz real da leitura enganosa depois
+    da otimizacao do Passo 17.
+
+    Usar essa string gigante DIRETO como setup_sweep_name quebra
+    (get_solution_data faz um split(":") ingenuo nela, ve um "nome de
+    setup" absurdo e da KeyError, deixando a sessao gRPC instavel
+    depois). A forma certa (assinatura de get_solution_data, doc/
+    exemplo do proprio pyaedt) e passar setup_sweep_name="Setup1 :
+    Sweep1" normal + variations={...} - MAS o dict tem que ter TODAS
+    as variaveis do design (nao so as 2 otimizadas), do jeito que o
+    exemplo oficial faz (`variations =
+    hfss.available_variations.nominal_values`, so trocando as chaves
+    de interesse) - passar so {"stub_distance":..., "stub_length":...}
+    fez a chamada IGNORAR silenciosamente o filtro e sempre devolver o
+    ponto nominal (mesmo dB(S11)=-0.06 identico nas 8 variacoes, o que
+    e fisicamente implausivel). Por isso aqui extraimos TODAS as
+    chaves 'var=valor' do nome do sweep, nao so var_names.
+
+    var_names: lista dos nomes das variaveis de projeto que foram
+    otimizadas (ex.: ["stub_distance", "stub_length"]), usada so para
+    decidir quais sweeps sao "por-variacao" e para exibir os valores -
+    a leitura em si usa TODAS as variaveis do nome do sweep.
+    """
+    sweeps = hfss.existing_analysis_sweeps
+    print(f"  setups disponiveis: {hfss.setup_names}")
+    print(f"  setup:sweep disponiveis ({len(sweeps)}): {sweeps}")
+
+    var_sweeps = [s for s in sweeps if all(f"{vn}=" in s for vn in var_names)]
+    if not var_sweeps:
+        print("  nenhum sweep por-variacao encontrado (nomes nao tem "
+              "'var=valor') - a otimizacao pode nao ter salvo essas "
+              "tabelas, ou os nomes das variaveis nao batem.")
+        return
+
+    base_setup_sweep = next(
+        (s for s in sweeps if s.strip() == "Setup1 : Sweep1"),
+        "Setup1 : Sweep1")
+
+    print(f"\n{len(var_sweeps)} variacoes encontradas. dB(S11) em "
+          f"{target_freq}GHz por variacao:")
+    best = None
+    for i, sweep_name in enumerate(var_sweeps):
+        full_vals = dict(re.findall(r"(\w+)='([^']*)'", sweep_name))
+        var_vals = {vn: full_vals.get(vn, "?") for vn in var_names}
+        try:
+            sol = hfss.post.get_solution_data(
+                expressions=["S(Port1,Port1)"],
+                setup_sweep_name=base_setup_sweep,
+                variations=full_vals)
+            freqs, s11_re = sol.get_expression_data(
+                "S(Port1,Port1)", formula="real")
+            _, s11_im = sol.get_expression_data(
+                "S(Port1,Port1)", formula="imag")
+            closest_idx = min(
+                range(len(freqs)), key=lambda k: abs(freqs[k] - target_freq))
+            re_s, im_s = s11_re[closest_idx], s11_im[closest_idx]
+            mag = (re_s**2 + im_s**2) ** 0.5
+            db = 20 * (math.log10(mag)) if mag > 0 else float("-inf")
+            var_desc = ", ".join(f"{vn}={var_vals[vn]}" for vn in var_names)
+            print(f"  [{i}] {var_desc} -> dB(S11)={db:.2f} "
+                  f"(f={freqs[closest_idx]:.4f}GHz)")
+            if best is None or db < best[0]:
+                best = (db, i, var_desc, freqs[closest_idx])
+        except Exception as e:
+            print(f"  [{i}] falhou ao ler ({e})")
+    if best:
+        print(f"\nMELHOR: variacao [{best[1]}] {best[2]} -> "
+              f"dB(S11)={best[0]:.2f} em f={best[3]:.4f}GHz")
+
+
 if __name__ == "__main__":
 
     check_geometry()
+    if RING_MODE == "build_spiral_single":
+        check_spiral_geometry(SPIRAL_MODEL)
 
     # 2026-09-20: sufixo unico (HHMMSS) no nome do design - descoberto
     # que rodar o script de novo com o MESMO nome de design (ex.:
@@ -1679,6 +2148,50 @@ if __name__ == "__main__":
             print("Faca manualmente na janela do AEDT que abriu: na "
                   "arvore do projeto, clique com o botao direito em "
                   "Optimetrics > Opt_joint_2p87GHz > Analyze.")
+
+    elif RING_MODE == "optimize_stub":
+        print(f"\nCriando e rodando a otimizacao do stub "
+              f"(Opt_stub_2p87GHz - stub_distance e stub_length "
+              f"livres) no modelo '{SASAKI_MODEL['name']}'... partindo "
+              f"de um vale que JA existe (Passo 16, -6.94dB em "
+              f"2.37GHz), so reajustando a posicao dele.")
+        try:
+            opt_setup = add_stub_optimization(hfss)
+            opt_setup.analyze()
+            hfss.save_project()
+            print("Otimizacao concluida e projeto salvo. Listando "
+                  "TODAS as variacoes testadas (nao so a nominal - ver "
+                  "nota em print_all_optimetrics_variations)...")
+            print_all_optimetrics_variations(
+                hfss, ["stub_distance", "stub_length"])
+        except Exception as e:
+            print(f"\nNao consegui rodar a otimizacao automaticamente "
+                  f"({e}).")
+            print("Faca manualmente na janela do AEDT que abriu: na "
+                  "arvore do projeto, clique com o botao direito em "
+                  "Optimetrics > Opt_stub_2p87GHz > Analyze.")
+
+    elif RING_MODE == "build_spiral_single":
+        print(f"\nRodando Setup1/Sweep1 (faixa larga {F_START}-{F_STOP}GHz) "
+              f"no modelo '{SPIRAL_MODEL['name']}' (N={SPIRAL_MODEL['N']} "
+              f"voltas, R_out={SPIRAL_MODEL['R_out']}mm)... geometria nova, "
+              f"ainda nao testada - so 1 solve, sem otimizar (mesma "
+              f"disciplina ja usada para o anel e o disco: localizar a "
+              f"ressonancia de verdade antes de mexer em qualquer "
+              f"parametro).")
+        hfss.analyze_setup("Setup1")
+        hfss.save_project()
+        print_zin_table(hfss)
+        print("Procure o vale de dB(S11) no grafico (Results > Modal "
+              "Solution Data Report > 2D, dB(S(Port1,Port1)) vs Freq) - "
+              "NAO precisa estar em 2.87GHz ainda. Se o vale estiver fundo "
+              "(< -10dB) perto de onde Im(Zin)~0 (impresso acima), o "
+              "casamento natural da espiral ja e bom - so falta deslocar "
+              "a frequencia mudando N (voltas, inteiro) ou R_out (passos "
+              "de 0.5mm). Compare Re(Zin) com o 0.55 ohm do disco "
+              "(roadmap.md Passo 13) para confirmar se a espiral realmente "
+              "melhorou o casamento natural, como esperado pela "
+              "indutancia maior (~N^2).")
 
     elif "Ring" in TOPOLOGIES and RING_MODE == "diagnostic_single":
         print("\nRodando Setup1/Sweep1 (faixa larga 0.5-6GHz) na "

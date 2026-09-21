@@ -295,19 +295,84 @@ rodados de verdade:**
     de novo (~1077cm³ de airbox estimado, mais apertado que os casos
     que já funcionaram antes); se der erro de malha, é só encolher a
     placa mais (`L_sub`/`W_sub` de `RO5880_STEP16_STUB`).
-    **Resultado ainda não visto.** Os valores de `stub_distance`/
-    `stub_length` são o ponto de partida do cálculo analítico — o
-    valor real de `λg` na simulação pode diferir um pouco da fórmula
-    de mão, então pode precisar de um ajuste fino pequeno (não um
-    redesenho) depois do primeiro resultado.
-17. Introduzir o diamante (3×3×0,300mm) — pendente, só depois do
+    **RESULTADO: FUNCIONOU DE VERDADE.** Vale de **−6,94dB em
+    2,37GHz** — de longe o melhor resultado já obtido em RO5880 (tudo
+    antes disso ficou entre −0,3 e −0,75dB). O conceito do stub está
+    provado; a única discrepância é a frequência (500MHz abaixo do
+    alvo) — o `λg` estimado à mão não bateu exato, ou a impedância do
+    disco muda o suficiente fora de 2,87GHz para deslocar o ponto de
+    casamento.
+17. **EM ANDAMENTO — otimização fina do stub** (`RO5880_STEP17_STUB_OPT`,
+    `add_stub_optimization`, `RING_MODE="optimize_stub"`). Só 2
+    variáveis (`stub_distance`, `stub_length`), `R_disk`/`s_off`/`g`/`r`
+    travados (a frequência natural do disco já foi resolvida no Passo
+    3 — o stub só precisa alinhar o PRÓPRIO ponto de casamento com
+    ela, não redefini-la). Chute inicial escalado pela razão de
+    frequência (2,87/2,37≈1,211): `stub_distance≈30,2mm`,
+    `stub_length≈16,8mm`, faixa de busca ±8mm em volta disso.
+    Diferente de todas as tentativas anteriores de casamento (taper,
+    Passos 4/5), esta otimização parte de um vale que **já existe e já
+    é fundo** — não está mais procurando às cegas.
+
+    A otimização em si rodou e terminou (~30min, design
+    `RO5880_Step17_StubOpt_Unloaded_094713`), mas a primeira leitura
+    rápida (`-0,06dB` em 2,87GHz) é suspeita de ter pego a variação
+    "nominal" errada, não o melhor ponto testado — mesma pegadinha já
+    documentada no README para a omega. Ao tentar ler TODAS as
+    variações via script separado (`scripts/read_stub_opt_results.py`,
+    reabrindo o projeto já resolvido sem reotimizar), dois bugs de
+    script (não de física) apareceram e foram corrigidos em
+    2026-09-21: (a) `Hfss(project=...)` recebia só o *nome* do
+    projeto, não o caminho completo do `.aedt` — numa sessão AEDT nova
+    (`new_desktop=True`) sem nada aberto ainda, isso arriscava não
+    achar o projeto certo; (b) `setup_sweep_name="Setup1 : Sweep1"`
+    hardcoded deu `KeyError` ("Setup Setup1 not available in current
+    design") ao reabrir o projeto do zero — corrigido para descobrir
+    dinamicamente via `hfss.existing_analysis_sweeps` em vez de
+    adivinhar o nome; (c) `release_desktop(close_on_exit=...)` — kwarg
+    não existe, é `close_desktop`.
+
+    Reotimizado do zero em 2026-09-21 (`RO5880_Step17_StubOpt_Unloaded_111943`,
+    projeto salvo de verdade desta vez — 129KB, contra ~4KB de uma
+    tentativa anterior que tinha ficado vazia). **Causa raiz real do
+    "-0,06dB sempre igual" finalmente encontrada**: o AEDT salva cada
+    variação testada pelo Optimetrics como um sweep próprio dentro do
+    mesmo Setup, com o nome literal contendo os valores das variáveis
+    (ex.: `"Setup1 - stub_distance='30.1mm' stub_length='16.8mm' :
+    Table"`), separado de `"Setup1 : Sweep1"` genérico e de `"Setup1 :
+    LastAdaptive"` (só a variação nominal, 1 ponto). As duas leituras
+    anteriores (`get_solution_data` sem variação, depois
+    `set_active_variation(i)` sobre `"Setup1 : Sweep1"`) caíam sempre
+    no ponto nominal — por isso o valor nunca mudava. `print_all_optimetrics_variations`
+    foi reescrita para extrair essas variações via regex nos nomes dos
+    sweeps e ler cada uma individualmente.
+
+    Ainda não estava certo: usar o nome do sweep direto como
+    `setup_sweep_name` quebra (`get_solution_data` faz um
+    `split(":")` ingênuo nele, vê um "nome de setup" absurdo e dá
+    `KeyError`, deixando a sessão gRPC instável para as chamadas
+    seguintes — foi o que gerou "Failed to execute gRPC AEDT command:
+    GetSetups" nas variações [1]-[7] numa tentativa). A forma certa
+    (documentada no próprio pyaedt) é `setup_sweep_name="Setup1 :
+    Sweep1"` normal + `variations={...}` — mas passando só as 2
+    variáveis otimizadas nesse dict, a chamada ignorava o filtro
+    silenciosamente e devolvia sempre o ponto nominal (as 8 variações
+    voltaram com dB(S11)=-0,06 **idêntico**, fisicamente implausível
+    para pontos diferentes testados por um otimizador). Corrigido
+    passando o dict **completo** de variáveis (todas as extraídas do
+    nome do sweep via regex, não só as 2 de interesse), igual ao
+    exemplo oficial do pyaedt (`variations =
+    hfss.available_variations.nominal_values`, só substituindo as
+    chaves de interesse). **Resultado numérico final ainda não
+    confirmado** — rodando a versão corrigida.
+18. Introduzir o diamante (3×3×0,300mm) — pendente, só depois do
     casamento resolvido (senão não dá pra saber se um desvio veio da
     geometria ou do diamante).
-18. Introduzir a alumina, se confirmado que faz parte da montagem —
+19. Introduzir a alumina, se confirmado que faz parte da montagem —
     pendente.
-19. Desenhar o lançamento do SMA com plano de terra realista —
+20. Desenhar o lançamento do SMA com plano de terra realista —
     pendente.
-20. Avaliar B₁z e sua uniformidade sobre a abertura (a figura de
+21. Avaliar B₁z e sua uniformidade sobre a abertura (a figura de
     mérito real do projeto) — pendente.
 
 ---
