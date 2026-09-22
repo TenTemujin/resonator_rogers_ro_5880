@@ -1,0 +1,42 @@
+SimValueCacheVersionID=1
+$begin 'SimValueInfos'
+	NextUniqueID=1
+	MoveBackwards=false
+	$begin 'SimValue'
+		ID=0
+		$begin 'SimValueParams'
+			QuantityName='St(Feedline_T1,Feedline_T1)'
+			ValueState(90, 15, 1, 2)
+			MatrixSize(0, 0)
+		$end 'SimValueParams'
+	$end 'SimValue'
+$end 'SimValueInfos'
+$begin 'SimValueCache'
+	$begin 'DesignMap'
+		DesignID=0
+		$begin 'SolutionMap'
+			$begin 'ContextMap'
+				SolutionID=180
+			$end 'ContextMap'
+			$begin 'ContextMap'
+				SolutionID=181
+			$end 'ContextMap'
+			$begin 'ContextMap'
+				SolutionID=185
+				$begin 'VersionMap'
+					$begin 'ReportTypeSolnDef'
+						ReportType=1
+						SimValueContext(3, 0, 2, 0, false, false, -1, 1, 0, 1, 1, '', 0, 0)
+					$end 'ReportTypeSolnDef'
+					$begin 'MajorVVMap'
+						VersionID=274
+						$begin 'MinorVVMap'
+							MajorVariation='a_spiral=\'3.5mm\' g_cpl=\'0.5mm\' g_spiral=\'0.5mm\' h_sub=\'0.75mm\' L_cpl=\'5mm\' L_sub=\'55mm\' p_spiral=\'1mm\' t_cu=\'0.035000000000000003mm\' w_feed=\'2.5mm\' w_spiral=\'0.5mm\' z_spiral=\'0.76749999999999996mm\''
+							MinorCacheFile='min2C5E47256179008325353.tmp'
+						$end 'MinorVVMap'
+					$end 'MajorVVMap'
+				$end 'VersionMap'
+			$end 'ContextMap'
+		$end 'SolutionMap'
+	$end 'DesignMap'
+$end 'SimValueCache'

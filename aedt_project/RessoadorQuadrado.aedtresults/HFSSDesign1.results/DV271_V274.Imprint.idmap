@@ -1,0 +1,17 @@
+$begin 'imprintInfo'
+	FileVersion='2025R2'
+	$begin 'imprintIDMap'
+	$end 'imprintIDMap'
+	$begin 'PartsInfo'
+		Part(6, 'Substrate_RO5880', -1, 6, 42, 44, 45, 46, 43, 47)
+		Part(69, 'ground', -1, 6, 70, 72, 73, 74, 71, 75)
+		Part(1810, 'Square_Spiral', -1, 16, 1824, 1825, 1826, 1827, 1828, 1829, 1830, 1831, 1832, 1833, 1834, 1835, 1836, 1837, 1838, 1839)
+		Part(1911, 'Feedline', -1, 6, 1912, 1914, 1915, 1916, 1913, 1917)
+		Part(1939, 'Port_Sheet', -1, 1, 1949)
+		Part(1951, 'Region', -1, 6, 1952, 1954, 1955, 1956, 1953, 1957)
+	$end 'PartsInfo'
+	$begin 'PartAddtionalPiecesInfo'
+	$end 'PartAddtionalPiecesInfo'
+	$begin 'faceImprintInfo'
+	$end 'faceImprintInfo'
+$end 'imprintInfo'

@@ -1609,19 +1609,30 @@ def build_spiral(hfss, p):
 
     points_per_turn = 72  # 5 graus/segmento - suave o bastante p/ malha
     n_points = int(round(n_turns * points_per_turn)) + 1
-    pts = []
+    # CORRECAO (2026-09-21): a versao anterior usava create_polyline com
+    # xsection_type="Line" (varredura de secao transversal). Testado no
+    # AEDT 2025.2SV: o sweep so gerava UM segmento (~0.87mm, area 0.44mm2
+    # em vez de ~132mm2) - a espiral praticamente nao existia no modelo.
+    # Agora a trilha e um poligono fechado (borda externa + borda
+    # interna invertida) coberto como folha. Coordenadas NUMERICAS em mm
+    # (model_units="mm"): com strings ("...mm", "h_sub") o CreatePolyline
+    # falha. Consequencia: geometria fixa (spiral_w nao e mais
+    # parametrica no AEDT; w vem de p['w']).
+    hfss.modeler.model_units = "mm"
+    z_mm = p["h_sub"]
+    half_w = p["w"] / 2
+    outer, inner = [], []
     for i in range(n_points):
         t = i / points_per_turn  # numero de voltas percorridas (fracao)
         theta = math.pi + 2 * math.pi * t
         r = r_out_mm - pitch * t
-        x = r * math.cos(theta)
-        y = r * math.sin(theta)
-        pts.append([f"{x:.5f}mm", f"{y:.5f}mm", "h_sub"])
+        c, s_ = math.cos(theta), math.sin(theta)
+        outer.append([(r + half_w) * c, (r + half_w) * s_, z_mm])
+        inner.append([(r - half_w) * c, (r - half_w) * s_, z_mm])
 
     spiral = hfss.modeler.create_polyline(
-        points=pts, segment_type="Line", xsection_type="Line",
-        xsection_orient="Z", xsection_width="spiral_w",
-        name="Spiral_trace")
+        points=outer + inner[::-1], segment_type="Line",
+        cover_surface=True, close_surface=True, name="Spiral_trace")
 
     # linha de alimentacao de 50 ohm entrando por -x - duas opcoes,
     # controladas por p['feed_gap'] (ver nota grande no topo da

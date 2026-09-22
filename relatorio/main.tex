@@ -1,4 +1,4 @@
-﻿\documentclass[12pt,a4paper]{article}
+\documentclass[10pt,a4paper,twocolumn]{article}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -18,65 +18,63 @@
 ]{biblatex}
 \addbibresource{referencias.bib}
 
-% Margens ABNT (3cm esq/topo, 2cm dir/baixo) via primitivos do LaTeX,
-% sem o pacote geometry - a versao instalada deste MiKTeX (2021, nunca
-% atualizado) tem o kernel LaTeX2e desatualizado para pacotes recentes
-% como geometry/siunitx, que agora exigem primitivos de 2022+.
-\setlength{\oddsidemargin}{0.46cm}   % 3cm - 1in
-\setlength{\evensidemargin}{0.46cm}
-\setlength{\topmargin}{-0.54cm}      % 3cm - 1in - cabecalho padrao
-\setlength{\headheight}{15pt}
-\setlength{\headsep}{0.45cm}
-\setlength{\textwidth}{16cm}       % 21cm - 3cm - 2cm
-\setlength{\textheight}{23.85cm}      % 29.7cm - 3cm - 2cm (aprox.)
+% Margens estilo IEEE (aprox. 17.8cm x 24.7cm area de texto)
+\setlength{\oddsidemargin}{-0.04cm}   % ~2cm esquerda
+\setlength{\evensidemargin}{-0.04cm}
+\setlength{\topmargin}{-1.0cm}
+\setlength{\headheight}{12pt}
+\setlength{\headsep}{0.35cm}
+\setlength{\textwidth}{17.8cm}        % 21cm - 2x1.6cm
+\setlength{\textheight}{24.7cm}
+\setlength{\columnsep}{0.6cm}
 
-% Espacamento 1,5 (equivalente ao setspace) sem depender do pacote
-\renewcommand{\baselinestretch}{1.5}
+% Espacamento simples (estilo IEEE)
+\renewcommand{\baselinestretch}{1.0}
 
-% Notas de fonte abaixo de figuras/tabelas (equivalente ao \legend do abntex2)
+% Notas de fonte abaixo de figuras/tabelas
 \newcommand{\legend}[1]{\par\vspace{2pt}\footnotesize #1}
-% Citacao no estilo autor(2021) usada no texto corrido
+% Citacao no estilo autor(2021)
 \newcommand{\citeonline}[1]{\citeauthor{#1} (\citeyear{#1})}
 \newcommand{\unbblue}{RoyalBlue}
-\hypersetup{pdftitle={Projeto e Simulacao de um Ressonador Omega de Micro-ondas}, pdfsubject={Relatorio Tecnico de Projeto -- Universidade de Brasilia}, pdfkeywords={ODMR, centros NV, ressonador omega, micro-ondas, UnB}}
+\hypersetup{pdftitle={Projeto e Simulacao de um Ressonador Omega de Micro-ondas},
+            pdfsubject={Relatorio Tecnico de Projeto -- Universidade de Brasilia},
+            pdfauthor={J. V. V. Faria, T. Ferreira},
+            pdfkeywords={ODMR, centros NV, ressonador omega, micro-ondas, UnB}}
+
+% Pagestyle IEEE (sem cabecalho, pagina centralizada no rodape)
 \makeatletter
-\def\ps@unb{
-  \def\@oddhead{\hfil\footnotesize\color{\unbblue}Universidade de Bras\'ilia -- Faculdade de Tecnologia\hfil}
-  \def\@evenhead{\@oddhead}
+\def\ps@ieee{
+  \let\@oddhead\@empty
+  \let\@evenhead\@empty
   \def\@oddfoot{\hfil\footnotesize\thepage\hfil}
   \def\@evenfoot{\@oddfoot}
 }
 \makeatother
-\pagestyle{unb}
+\pagestyle{ieee}
 \setcounter{tocdepth}{2}
 
 \begin{document}
-\hypersetup{pageanchor=false}
 
-% --- Capa / folha de rosto (formatacao ABNT manual) ---
-\begin{titlepage}
-	\centering
-	\vspace*{0.8cm}
-	\includegraphics[width=6.5cm]{assets/unb_marca/as_bas_cor_jpg/as_bas_cor.jpg}\par
-	\vspace{0.8cm}
-	{\large\bfseries UNIVERSIDADE DE BRAS\'ILIA\par}
-	{\normalsize Faculdade de Tecnologia\par}
-	{\normalsize Departamento de Engenharia El\'etrica\par}
-	\vspace{3.4cm}
-	{\Large\bfseries Projeto e Simula\c{c}\~ao de um Ressonador \^Omega de
-	Micro-ondas em Rogers RT/duroid~5880 para ODMR de Centros
-	NV$^-$ em Diamante\par}
-	\vspace{3.5cm}
-	\vspace{0.8cm}
-	{\normalsize\textcolor{\unbblue}{RELAT\'ORIO T\'ECNICO DE PROJETO}\par}
-	\vspace{0.5cm}
-	\vfill
-	{\large Bras\'ilia, DF\par}
-	{\large 2026\par}
-\end{titlepage}
+% --- Titulo e autores no estilo IEEE ---
+\twocolumn[
+\begin{center}
+\vspace*{0.3cm}
+{\LARGE\bfseries Projeto e Simula\c{c}\~ao de um Ressonador \^Omega de
+Micro-ondas em Rogers RT/duroid~5880 para ODMR de Centros
+NV$^-$ em Diamante\par}
+\vspace{0.6cm}
 
-\pagenumbering{arabic}
-\hypersetup{pageanchor=true}
+{\normalsize
+\textbf{Jo\~ao Victor Vieira Faria} \quad e \quad \textbf{Thiago Ferreira}\par}
+\vspace{0.15cm}
+{\small\itshape
+Departamento de Engenharia El\'etrica (ENE) -- Faculdade de Tecnologia\\
+Universidade de Bras\'ilia (UnB), Bras\'ilia, DF, Brasil\par}
+\vspace{0.15cm}
+{\small Orientador: Prof.\ Dr.\ Achiles Fontana da Mota\par}
+\vspace{0.5cm}
+\end{center}
+]
 \setcounter{page}{1}
 \section*{Resumo}
 \addcontentsline{toc}{section}{Resumo}
@@ -122,15 +120,6 @@ refer\^encia) permanece n\~ao confirmada com o orientador.
 Antena \^omega. Simula\c{c}\~ao eletromagn\'etica. HFSS.
 \end{abstract}
 
-\newpage
-\tableofcontents
-\newpage
-\listoffigures
-\addcontentsline{toc}{section}{Lista de figuras}
-\newpage
-\listoftables
-\addcontentsline{toc}{section}{Lista de tabelas}
-\newpage
 
 \section{Introdu\c{c}\~ao}
 \label{sec:introducao}
@@ -272,6 +261,7 @@ por\'em, na lista de materiais confirmados para o experimento. Como o
 plano de terra influencia o casamento e a distribui\c{c}\~ao de campo,
 os resultados devem ser recalculados caso seu material, dimens\~oes ou
 presen\c{c}a sejam diferentes na montagem real.
+
 \section{Metodologia}
 \label{sec:metodologia}
 
@@ -418,7 +408,7 @@ descrita.
 	condutor, diamante e portas), com as dimens\~oes finais.}
 	\label{fig:planta-baixa}
 	\centering
-	\includegraphics[width=0.75\textwidth]{../results/figures/fig_planta_baixa.png}
+	\includegraphics[width=\columnwidth]{../results/figures/fig_planta_baixa.png}
 	\legend{Fonte: elaborado pelo autor a partir dos par\^ametros exatos do modelo HFSS.}
 \end{figure}
 
@@ -427,7 +417,7 @@ descrita.
 	cotas e amplia\c{c}\~ao da fenda de 0,15\,mm.}
 	\label{fig:detalhe-abertura}
 	\centering
-	\includegraphics[width=0.7\textwidth]{../results/figures/fig_detalhe_abertura.png}
+	\includegraphics[width=\columnwidth]{../results/figures/fig_detalhe_abertura.png}
 	\legend{Fonte: elaborado pelo autor.}
 \end{figure}
 
@@ -437,7 +427,7 @@ descrita.
 	clareza.}
 	\label{fig:stackup}
 	\centering
-	\includegraphics[width=0.85\textwidth]{../results/figures/fig_stackup_lateral.png}
+	\includegraphics[width=\columnwidth]{../results/figures/fig_stackup_lateral.png}
 	\legend{Fonte: elaborado pelo autor.}
 \end{figure}
 
@@ -446,7 +436,7 @@ descrita.
 	Ansys HFSS (\texttt{export\_model\_picture}).}
 	\label{fig:hfss-iso}
 	\centering
-	\includegraphics[width=0.75\textwidth]{../results/figures/fig_hfss_isometrica.png}
+	\includegraphics[width=\columnwidth]{../results/figures/fig_hfss_isometrica.png}
 	\legend{Fonte: Ansys HFSS 2025~R2 Student, modelo simulado.}
 \end{figure}
 
@@ -455,7 +445,7 @@ descrita.
 	Ansys HFSS.}
 	\label{fig:hfss-top}
 	\centering
-	\includegraphics[width=0.75\textwidth]{../results/figures/fig_hfss_topo.png}
+	\includegraphics[width=\columnwidth]{../results/figures/fig_hfss_topo.png}
 	\legend{Fonte: Ansys HFSS 2025~R2 Student, modelo simulado.}
 \end{figure}
 
@@ -466,7 +456,7 @@ descrita.
 	abertura).}
 	\label{fig:3d-completa}
 	\centering
-	\includegraphics[width=0.75\textwidth]{../results/figures/fig_3d_estrutura_completa.png}
+	\includegraphics[width=\columnwidth]{../results/figures/fig_3d_estrutura_completa.png}
 	\legend{Fonte: elaborado pelo autor (Plotly), a partir dos par\^ametros exatos do modelo HFSS.}
 \end{figure}
 
@@ -475,7 +465,7 @@ descrita.
 	do diamante sobreposto.}
 	\label{fig:3d-detalhe}
 	\centering
-	\includegraphics[width=0.7\textwidth]{../results/figures/fig_3d_detalhe_abertura.png}
+	\includegraphics[width=\columnwidth]{../results/figures/fig_3d_detalhe_abertura.png}
 	\legend{Fonte: elaborado pelo autor (Plotly).}
 \end{figure}
 
@@ -516,7 +506,7 @@ $\varepsilon_r\approx9.8$) sobrepostos. As Figuras~\ref{fig:s11} e
 	transi\c{c}\~oes Zeeman marcadas.}
 	\label{fig:s11}
 	\centering
-	\includegraphics[width=0.9\textwidth]{../results/figures/fig_S11.png}
+	\includegraphics[width=\columnwidth]{../results/figures/fig_S11.png}
 	\legend{Fonte: elaborado pelo autor, dados do Ansys HFSS.}
 \end{figure}
 
@@ -526,7 +516,7 @@ $\varepsilon_r\approx9.8$) sobrepostos. As Figuras~\ref{fig:s11} e
 	elemento de dois portos em linha.}
 	\label{fig:s21}
 	\centering
-	\includegraphics[width=0.9\textwidth]{../results/figures/fig_S21.png}
+	\includegraphics[width=\columnwidth]{../results/figures/fig_S21.png}
 	\legend{Fonte: elaborado pelo autor, dados do Ansys HFSS.}
 \end{figure}
 
@@ -536,7 +526,7 @@ $\varepsilon_r\approx9.8$) sobrepostos. As Figuras~\ref{fig:s11} e
 	a banda.}
 	\label{fig:delta}
 	\centering
-	\includegraphics[width=0.85\textwidth]{../results/figures/fig_delta_diamante.png}
+	\includegraphics[width=\columnwidth]{../results/figures/fig_delta_diamante.png}
 	\legend{Fonte: elaborado pelo autor, dados do Ansys HFSS.}
 \end{figure}
 
@@ -571,7 +561,7 @@ cortes de linha da Fig.~4 de \citeonline{opaluch2021}.
 	$1$~W na porta, 2,87\,GHz.}
 	\label{fig:campo}
 	\centering
-	\includegraphics[width=0.85\textwidth]{../results/figures/fig_campo_MagH_cortes.png}
+	\includegraphics[width=\columnwidth]{../results/figures/fig_campo_MagH_cortes.png}
 	\legend{Fonte: elaborado pelo autor, dados do Ansys HFSS.}
 \end{figure}
 
@@ -693,12 +683,3 @@ do projeto, em ordem de prioridade, s\~ao:
 \printbibliography[heading=bibintoc,title={Refer\^encias}]
 
 \end{document}
-
-
-
-
-
-
-
-
-
