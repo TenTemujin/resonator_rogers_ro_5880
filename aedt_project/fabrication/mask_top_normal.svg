@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="87.0000mm" height="82.0000mm" viewBox="-43.5000 -41.0000 87.0000 82.0000">
+<rect x="-43.5000" y="-41.0000" width="87.0000" height="82.0000" fill="white" />
+<polygon points="-3.5000,3.7500 -3.5000,3.2500 3.2500,3.2500 3.2500,-3.2500 -2.2500,-3.2500 -2.2500,2.2500 2.2500,2.2500 2.2500,-2.5000 2.7500,-2.5000 2.7500,2.7500 -2.7500,2.7500 -2.7500,-3.7500 3.7500,-3.7500 3.7500,3.7500" fill="black" stroke="none" />
+<polygon points="-27.5000,6.7500 -27.5000,4.2500 1.5000,4.2500 1.5000,6.7500" fill="black" stroke="none" />
+<rect x="-27.5000" y="-25.0000" width="55.0000" height="50.0000" fill="none" stroke="black" stroke-width="0.1" stroke-dasharray="1.2,0.9" />
+<line x1="-29.0000" y1="25.0000" x2="-26.0000" y2="25.0000" stroke="black" stroke-width="0.15" />
+<line x1="-27.5000" y1="23.5000" x2="-27.5000" y2="26.5000" stroke="black" stroke-width="0.15" />
+<line x1="-29.0000" y1="-25.0000" x2="-26.0000" y2="-25.0000" stroke="black" stroke-width="0.15" />
+<line x1="-27.5000" y1="-26.5000" x2="-27.5000" y2="-23.5000" stroke="black" stroke-width="0.15" />
+<line x1="26.0000" y1="25.0000" x2="29.0000" y2="25.0000" stroke="black" stroke-width="0.15" />
+<line x1="27.5000" y1="23.5000" x2="27.5000" y2="26.5000" stroke="black" stroke-width="0.15" />
+<line x1="26.0000" y1="-25.0000" x2="29.0000" y2="-25.0000" stroke="black" stroke-width="0.15" />
+<line x1="27.5000" y1="-26.5000" x2="27.5000" y2="-23.5000" stroke="black" stroke-width="0.15" />
+<line x1="-27.5000" y1="31.0000" x2="-7.5000" y2="31.0000" stroke="black" stroke-width="0.25" />
+<line x1="-27.5000" y1="30.4000" x2="-27.5000" y2="31.6000" stroke="black" stroke-width="0.25" />
+<line x1="-7.5000" y1="30.4000" x2="-7.5000" y2="31.6000" stroke="black" stroke-width="0.25" />
+<text x="-17.5000" y="33.2000" font-family="sans-serif" font-size="1.8" text-anchor="middle">20,00 mm - confira apos imprimir a 100% (sem ajustar a pagina)</text>
+<text x="0.0000" y="-30.5000" font-family="sans-serif" font-size="2.0" text-anchor="middle">MASCARA CAMADA SUPERIOR - NORMAL (referencia / fotolito)</text>
+<text x="0.0000" y="35.0000" font-family="sans-serif" font-size="1.8" text-anchor="middle">Camada inferior (ground) = cobre solido continuo, sem corrosao.</text>
+</svg>
